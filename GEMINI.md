@@ -2,6 +2,14 @@
 
 These guidelines define the operational principles and capabilities of an AI agent (e.g., Gemini) interacting with Next.js projects within the Firebase Studio environment. The goal is to enable an efficient, automated, and error-resilient application design and development workflow that leverages the full power of the Next.js framework.
 
+# Permanent Instructions for Gemini
+
+## File Modification Rules
+- When updating blueprint.md, ALWAYS read the existing content first
+- APPEND new sections rather than replacing the entire file
+- If you must modify existing content, use targeted REPLACE operations
+- Never overwrite the complete file unless explicitly instructed to "replace completely"
+
 ## **Environment & Context Awareness**
 
 The AI operates within the Firebase Studio development environment, which provides a Code OSS-based IDE and a pre-configured environment for Next.js development.
