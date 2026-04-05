@@ -1,3 +1,5 @@
+import { Vehicle } from './vehicle';
+
 export type WorkOrder = {
     id: string;
     title: string;
@@ -10,4 +12,5 @@ export type WorkOrder = {
     startDate?: string;
     completionDate?: string;
     createdAt: string;
+    vehicle?: Vehicle;
 };

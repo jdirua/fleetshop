@@ -1,15 +1,20 @@
 
-import Link from 'next/link';
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 export default function UnauthorizedPage() {
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col justify-center items-center">
-      <div className="max-w-md w-full text-center p-8 bg-white shadow-lg rounded-lg">
-        <h1 className="text-4xl font-bold text-red-600 mb-4">Access Denied</h1>
-        <p className="text-lg text-gray-700 mb-6">You do not have the necessary permissions to view this page.</p>
-        <Link href="/dashboard">
-          <a className="px-6 py-3 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">Go to Dashboard</a>
-        </Link>
+    <div className="min-h-screen bg-gravel-noise flex flex-col items-center justify-center text-center p-4">
+      <div className="max-w-md p-8 glass-card rounded-lg">
+        <h1 className="text-5xl font-bold text-destructive mb-4">Access Denied</h1>
+        <p className="text-lg text-muted-foreground mb-8">
+          Sorry, you do not have the necessary permissions to access this page.
+        </p>
+        <Button asChild>
+          <Link href="/dashboard">
+            Return to Dashboard
+          </Link>
+        </Button>
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/DataTable";
 import { columns } from "./columns";
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '@/context/UserContext';
 import { hasPermission } from '@/lib/auth/roles';
 import { User } from '@/lib/types/user';
 
@@ -19,8 +19,8 @@ export default function UsersPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        const fetchedUsers = await getUsers();
-        setUsers(fetchedUsers);
+        const { data } = await getUsers();
+        setUsers(data);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       }
@@ -32,7 +32,7 @@ export default function UsersPage() {
   const canCreate = user && user.role && hasPermission(user.role, 'users:create');
 
   return (
-    <Card>
+    <Card className="glassmorphic">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Users</CardTitle>
         {canCreate && (

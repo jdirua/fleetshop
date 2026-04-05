@@ -1,68 +1,54 @@
+
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
 import { User } from '@/lib/types/user';
-import { Button } from '@/components/ui/button';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useUser } from '@/hooks/useUser';
-import { hasPermission } from '@/lib/auth/roles';
-import Link from 'next/link';
-
-// New component to handle the actions dropdown
-const UserActions = ({ user }: { user: User }) => {
-  const { user: currentUser } = useUser();
-  const canUpdate = currentUser && currentUser.role && hasPermission(currentUser.role, 'users:update');
-  const canDelete = currentUser && currentUser.role && hasPermission(currentUser.role, 'users:delete');
-
-  return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button aria-haspopup="true" size="icon" variant="ghost">
-          <MoreHorizontal className="h-4 w-4" />
-          <span className="sr-only">Toggle menu</span>
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <Link href={`/dashboard/users/${user.id}`}>
-          <DropdownMenuItem>View</DropdownMenuItem>
-        </Link>
-        {canUpdate && (
-          <Link href={`/dashboard/users/${user.id}/edit`}>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-          </Link>
-        )}
-        {canDelete && (
-          <DropdownMenuItem>Delete</DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  );
-};
+import { UserActions } from '@/components/users/UserActions';
+import { Checkbox } from '@/components/ui/checkbox';
+import { DataTableColumnHeader } from '@/components/ui/DataTable';
 
 export const columns: ColumnDef<User>[] = [
   {
-    accessorKey: 'name',
-    header: 'Name',
+    id: 'select',
+    header: ({ table }) => (
+      <Checkbox
+        checked={table.getIsAllPageRowsSelected()}
+        onCheckedChange={(value: boolean | 'indeterminate') => table.toggleAllPageRowsSelected(!!value)}
+        aria-label="Select all"
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        checked={row.getIsSelected()}
+        onCheckedChange={(value: boolean | 'indeterminate') => row.toggleSelected(!!value)}
+        aria-label="Select row"
+      />
+    ),
+    enableSorting: false,
+    enableHiding: false,
+  },
+  {
+    accessorKey: 'displayName',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Name" />
+    ),
   },
   {
     accessorKey: 'email',
-    header: 'Email',
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Email" />
+    ),
   },
   {
     accessorKey: 'role',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Role
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Role" />
+    ),
+  },
+  {
+    accessorKey: 'disabled',
+    header: 'Status',
+    cell: ({ row }) => (row.original.disabled ? 'Disabled' : 'Enabled'),
   },
   {
     id: 'actions',

@@ -1,39 +1,31 @@
-
 'use server';
 
-import { db } from '@/lib/firebase/server';
+import { auth } from '@/lib/firebase/admin-sdk'; // Corrected import
 import { User } from '@/lib/types/user';
-import { revalidatePath } from 'next/cache';
 
-export async function getUserById(id: string): Promise<User> {
-    const doc = await db.collection('users').doc(id).get();
-    if (!doc.exists) {
-        throw new Error('User not found');
-    }
-    return { id: doc.id, ...doc.data() } as User;
+export async function getAllUsers(): Promise<User[]> {
+  const users: User[] = [];
+  const listUsersResult = await auth.listUsers();
+  listUsersResult.users.forEach(userRecord => {
+    users.push({
+      uid: userRecord.uid,
+      email: userRecord.email || '',
+      displayName: userRecord.displayName || '',
+      role: userRecord.customClaims?.role || 'user',
+      disabled: userRecord.disabled,
+    });
+  });
+  return users;
 }
 
-export async function updateUser(id: string, data: Partial<User>): Promise<void> {
-    await db.collection('users').doc(id).update(data);
-    revalidatePath('/dashboard/users');
-    revalidatePath(`/dashboard/users/${id}/edit`);
+export async function updateUserRole(uid: string, role: string) {
+  await auth.setCustomUserClaims(uid, { role });
 }
 
-export async function getUsers(): Promise<User[]> {
-    const snapshot = await db.collection('users').get();
-    if (snapshot.empty) {
-        return [];
-    }
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as User));
-}
-
-export async function deleteUser(id: string): Promise<void> {
-    await db.collection('users').doc(id).delete();
-    revalidatePath('/dashboard/users');
-}
-
-export async function createUser(data: Omit<User, 'id'>): Promise<User> {
-    const docRef = await db.collection('users').add(data);
-    revalidatePath('/dashboard/users');
-    return { id: docRef.id, ...data };
-}
+export const updateUser = async (uid: string, data: Partial<User>) => {
+  const { displayName, role } = data;
+  await auth.updateUser(uid, { displayName });
+  if (role) {
+    await updateUserRole(uid, role);
+  }
+};

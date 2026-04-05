@@ -80,7 +80,7 @@ export default function WorkOrderDetailsPage({ params }: { params: { id: string 
         </div>
         <div>
             <p className="font-semibold">Assigned Mechanic:</p>
-            <p>{mechanic ? mechanic.name : 'Not Assigned'}</p>
+            <p>{mechanic ? mechanic.displayName : 'Not Assigned'}</p>
         </div>
         <div>
             <p className="font-semibold">Start Date:</p>

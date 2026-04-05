@@ -15,6 +15,7 @@ import { VehicleStatusChart } from '@/components/reports/VehicleStatusChart';
 import { WorkOrderStatusChart } from '@/components/reports/WorkOrderStatusChart';
 import { RecentActivity } from '@/components/reports/RecentActivity';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Truck, Wrench, History } from 'lucide-react';
 
 export default function ReportsPage() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
@@ -24,21 +25,30 @@ export default function ReportsPage() {
 
   useEffect(() => {
     async function fetchData() {
-      const [vehiclesData, workOrdersData, activityLogsData] = await Promise.all([
+      const [vehiclesResponse, workOrdersResponse, activityLogsResponse] = await Promise.all([
         getVehicles(),
         getWorkOrders(),
         getActivityLogs(),
       ]);
-      setVehicles(vehiclesData);
-      setWorkOrders(workOrdersData);
-      setActivityLogs(activityLogsData);
+
+      if (vehiclesResponse.vehicles && Array.isArray(vehiclesResponse.vehicles)) {
+        setVehicles(vehiclesResponse.vehicles);
+      }
+
+      if (workOrdersResponse.workOrders && Array.isArray(workOrdersResponse.workOrders)) {
+        setWorkOrders(workOrdersResponse.workOrders);
+      }
+
+      if (activityLogsResponse.activityLogs && Array.isArray(activityLogsResponse.activityLogs)) {
+        setActivityLogs(activityLogsResponse.activityLogs);
+      }
     }
     fetchData();
   }, []);
 
   const exportToPdf = async () => {
     if (contentRef.current) {
-      const canvas = await html2canvas(contentRef.current);
+      const canvas = await html2canvas(contentRef.current, { backgroundColor: '#1E293B' });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
       const pdfWidth = pdf.internal.pageSize.getWidth();
@@ -54,33 +64,36 @@ export default function ReportsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Reports & Analytics</h1>
-        <Button onClick={exportToPdf}>Export to PDF</Button>
+        <h1 className="text-3xl font-bold">Reports and Analytics Hub</h1>
+        <Button onClick={exportToPdf} className="bg-purple-500 text-white hover:bg-purple-600">Export to PDF</Button>
       </div>
       <div ref={contentRef} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
+          <Card className="glassmorphic">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Vehicle Status</CardTitle>
+              <Truck className="h-6 w-6 text-purple-400" />
             </CardHeader>
             <CardContent>
               <VehicleStatusChart vehicles={vehicles} />
             </CardContent>
           </Card>
-          <Card>
-            <CardHeader>
+          <Card className="glassmorphic">
+            <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Work Order Status</CardTitle>
+              <Wrench className="h-6 w-6 text-purple-400" />
             </CardHeader>
             <CardContent>
              <WorkOrderStatusChart workOrders={workOrders} />
             </CardContent>
           </Card>
         </div>
-        <Card>
-          <CardHeader>
+        <Card className="glassmorphic">
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Activity</CardTitle>
+            <History className="h-6 w-6 text-purple-400" />
           </CardHeader>
           <CardContent>
             <RecentActivity activityLogs={activityLogs} />

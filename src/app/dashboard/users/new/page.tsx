@@ -13,7 +13,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ROLES, UserRole } from '@/lib/auth/roles';
 
 const userSchema = z.object({
-  name: z.string().min(1, 'Name is required'),
+  displayName: z.string().min(1, 'Display name is required'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
   role: z.enum(Object.values(ROLES) as [UserRole, ...UserRole[]]),
@@ -32,12 +32,7 @@ export default function NewUserPage() {
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      await createUser({
-        name: data.name,
-        email: data.email,
-        role: data.role,
-        createdAt: new Date().toISOString(),
-      });
+      await createUser({ ...data, uid: '', photoURL: '', disabled: false });
       router.push('/dashboard/users');
     } catch (error) {
       console.error('Failed to create user:', error);
@@ -53,9 +48,9 @@ export default function NewUserPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                     <div>
-                        <Label htmlFor="name">Name</Label>
-                        <Input id="name" {...register('name')} />
-                        {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
+                        <Label htmlFor="displayName">Display Name</Label>
+                        <Input id="displayName" {...register('displayName')} />
+                        {errors.displayName && <p className="text-red-500 text-xs">{errors.displayName.message}</p>}
                     </div>
                     <div>
                         <Label htmlFor="email">Email</Label>

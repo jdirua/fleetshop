@@ -36,7 +36,7 @@ type WorkOrderFormData = z.infer<typeof workOrderSchema>;
 
 export default function EditWorkOrderPage({ params }: { params: { id: string } }) {
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors }, control, reset, setValue, getValues } = useForm<WorkOrderFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, getValues } = useForm<WorkOrderFormData>({
     resolver: zodResolver(workOrderSchema),
   });
   const [workOrder, setWorkOrder] = useState<WorkOrder | null>(null);
@@ -49,8 +49,8 @@ export default function EditWorkOrderPage({ params }: { params: { id: string } }
         try {
             const [fetchedWorkOrder, fetchedVehicles, fetchedUsers] = await Promise.all([
                 getWorkOrder(params.id),
-                getVehicles(),
-                getUsers(),
+                getVehicles({ limit: 1000 }),
+                getUsers({ limit: 1000 }),
             ]);
 
             if (fetchedWorkOrder) {
@@ -62,8 +62,8 @@ export default function EditWorkOrderPage({ params }: { params: { id: string } }
                 });
             }
             
-            setVehicles(fetchedVehicles);
-            setUsers(fetchedUsers.filter(u => u.role === ROLES.MECHANIC));
+            setVehicles(fetchedVehicles.vehicles);
+            setUsers(fetchedUsers.data.filter(u => u.role === ROLES.MECHANIC));
         } catch (error) {
             console.error('Failed to load initial data', error)
         }
@@ -174,7 +174,7 @@ export default function EditWorkOrderPage({ params }: { params: { id: string } }
                                 <SelectValue placeholder="Select mechanic" />
                             </SelectTrigger>
                             <SelectContent>
-                                {users.map(u => <SelectItem key={u.id} value={u.id}>{u.name}</SelectItem>)}
+                                {users.map(u => <SelectItem key={u.uid} value={u.uid}>{u.displayName}</SelectItem>)}
                             </SelectContent>
                         </Select>
                     </div>

@@ -2,7 +2,7 @@
 import { getFuelLog } from "@/lib/actions/fuelLogs";
 import { getVehicles } from "@/lib/actions/vehicles";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FuelLogForm } from "@/components/forms/FuelLogForm";
+import EditFuelLogForm from "./EditFuelLogForm";
 
 interface EditFuelLogPageProps {
   params: { id: string };
@@ -15,17 +15,23 @@ export default async function EditFuelLogPage({ params }: EditFuelLogPageProps) 
   ]);
 
   if (!fuelLog) {
-    return <div>Fuel log not found</div>;
+    return (
+        <div className="flex items-center justify-center h-full">
+          <p className="text-lg text-muted-foreground">Fuel log not found.</p>
+        </div>
+    );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Edit Fuel Log</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <FuelLogForm fuelLog={fuelLog} vehicles={vehicles} />
-      </CardContent>
-    </Card>
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <Card>
+            <CardHeader>
+                <CardTitle>Edit Fuel Log</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <EditFuelLogForm fuelLog={fuelLog} vehicles={vehicles} />
+            </CardContent>
+        </Card>
+    </div>
   );
 }

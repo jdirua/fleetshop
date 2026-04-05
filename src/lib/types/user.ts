@@ -1,9 +1,10 @@
 import { UserRole } from "@/lib/auth/roles";
 
-export type User = {
-    id: string;
-    name: string;
-    email: string;
-    role: UserRole;
-    createdAt: string;
-  };
+export interface User {
+  uid: string;
+  email: string | null;
+  displayName: string | null;
+  photoURL?: string | null;
+  role: UserRole;
+  disabled?: boolean;
+}

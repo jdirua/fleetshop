@@ -1,13 +1,14 @@
-'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
-import { WorkOrder } from '@/lib/types/workOrder';
-import { Button } from '@/components/ui/button';
-import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+"use client"
+
+import { ColumnDef } from "@tanstack/react-table"
+import { WorkOrder } from "@/lib/types/workOrder"
+import { Button } from "@/components/ui/button"
+import { ArrowUpDown, MoreHorizontal } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useUser } from '@/hooks/useUser';
-import { hasPermission } from '@/lib/auth/roles';
-import Link from 'next/link';
+import { useUser } from "@/context/UserContext";
+import { hasPermission } from "@/lib/auth/roles";
+import Link from "next/link";
 
 // New component to handle the actions dropdown
 const WorkOrderActions = ({ workOrder }: { workOrder: WorkOrder }) => {
@@ -18,23 +19,26 @@ const WorkOrderActions = ({ workOrder }: { workOrder: WorkOrder }) => {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-haspopup="true" size="icon" variant="ghost">
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
           <MoreHorizontal className="h-4 w-4" />
-          <span className="sr-only">Toggle menu</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
-        <Link href={`/dashboard/work-orders/${workOrder.id}`}>
-          <DropdownMenuItem>View</DropdownMenuItem>
-        </Link>
+        <DropdownMenuItem asChild>
+          <Link href={`/dashboard/work-orders/${workOrder.id}`}>View Details</Link>
+        </DropdownMenuItem>
         {canUpdate && (
-          <Link href={`/dashboard/work-orders/${workOrder.id}/edit`}>
-            <DropdownMenuItem>Edit</DropdownMenuItem>
-          </Link>
+          <DropdownMenuItem asChild>
+            <Link href={`/dashboard/work-orders/${workOrder.id}/edit`}>Edit Work Order</Link>
+          </DropdownMenuItem>
         )}
         {canDelete && (
-          <DropdownMenuItem>Delete</DropdownMenuItem>
+          <DropdownMenuItem>
+            {/* Logic to delete a work order should be implemented here */}
+            Delete Work Order
+          </DropdownMenuItem>
         )}
       </DropdownMenuContent>
     </DropdownMenu>
@@ -43,33 +47,39 @@ const WorkOrderActions = ({ workOrder }: { workOrder: WorkOrder }) => {
 
 export const columns: ColumnDef<WorkOrder>[] = [
   {
-    accessorKey: 'title',
-    header: 'Title',
+    accessorKey: "title",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Title
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
   },
   {
-    accessorKey: 'vehicle.registration',
-    header: 'Vehicle',
+    accessorKey: "vehicle",
+    header: "Vehicle",
+    cell: ({ row }) => {
+      const vehicle = row.original.vehicle;
+      return vehicle ? `${vehicle.make} ${vehicle.model}` : 'N/A';
+    }
   },
   {
-    accessorKey: 'status',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          Status
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
+    accessorKey: "status",
+    header: "Status",
   },
   {
-    accessorKey: 'priority',
-    header: 'Priority',
+    accessorKey: "priority",
+    header: "Priority",
   },
   {
-    id: 'actions',
+    accessorKey: "assignedMechanic.displayName",
+    header: "Assigned Mechanic",
+  },
+  {
+    id: "actions",
     cell: ({ row }) => <WorkOrderActions workOrder={row.original} />,
   },
 ];

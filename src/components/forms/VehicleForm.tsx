@@ -75,7 +75,7 @@ export function VehicleForm({ vehicle }: VehicleFormProps) {
           <SelectTrigger id="status">
             <SelectValue placeholder="Select a status" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="solid-dropdown">
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="in-shop">In Shop</SelectItem>
             <SelectItem value="decommissioned">Decommissioned</SelectItem>

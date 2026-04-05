@@ -1,18 +1,11 @@
-
-export type InventoryItem = {
+export interface InventoryItem {
     id: string;
     name: string;
     quantity: number;
     cost: number;
-    supplier?: string;
-    location?: string;
-    reorderPoint?: number;
+    reorderPoint: number;
+    supplier: string;
+    location: string;
     createdAt: string;
-};
-
-export type FormState = {
-  errors?: {
-    [key: string]: string[] | undefined;
-  };
-  message?: string | null;
-};
+  }
+  

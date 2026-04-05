@@ -15,12 +15,22 @@ const COLORS = {
 };
 
 export function VehicleStatusChart({ vehicles }: VehicleStatusChartProps) {
-  const data = Object.entries(
-    vehicles.reduce((acc, vehicle) => {
-      acc[vehicle.status] = (acc[vehicle.status] || 0) + 1;
-      return acc;
-    }, {} as Record<Vehicle['status'], number>)
-  ).map(([name, value]) => ({ name, value }));
+  // Guard against non-array inputs to prevent runtime errors
+  if (!Array.isArray(vehicles)) {
+    // Return null or a placeholder to avoid crashing
+    return <div className="flex items-center justify-center h-full"><p className="text-gray-400">No data available for chart.</p></div>;
+  }
+
+  const statusCounts = vehicles.reduce((acc, vehicle) => {
+    acc[vehicle.status] = (acc[vehicle.status] || 0) + 1;
+    return acc;
+  }, {} as Record<Vehicle['status'], number>);
+
+  const data = Object.entries(statusCounts).map(([name, value]) => ({ name, value }));
+
+  if (data.length === 0) {
+      return <div className="flex items-center justify-center h-full"><p className="text-gray-400">No vehicle data to display.</p></div>
+  }
 
   return (
     <ResponsiveContainer width="100%" height={300}>

@@ -3,16 +3,6 @@
 
 import { ColumnDef } from "@tanstack/react-table";
 import { InventoryItem } from "@/lib/types/inventory";
-import { MoreHorizontal } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import Link from "next/link";
 import { ItemActions } from "./ItemActions";
 
 export const columns: ColumnDef<InventoryItem>[] = [

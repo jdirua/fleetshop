@@ -15,6 +15,7 @@ export const PERMISSIONS = {
   'vehicles:delete': [ROLES.ADMIN, ROLES.MANAGER],
 
   // Work Order Permissions
+  'manage_work_orders': [ROLES.ADMIN, ROLES.MANAGER, ROLES.MECHANIC],
   'work-orders:create': [ROLES.ADMIN, ROLES.MANAGER, ROLES.MECHANIC],
   'work-orders:read': [ROLES.ADMIN, ROLES.MANAGER, ROLES.MECHANIC, ROLES.READONLY],
   'work-orders:update': [ROLES.ADMIN, ROLES.MANAGER, ROLES.MECHANIC],
@@ -63,5 +64,8 @@ export const PERMISSIONS = {
 export type Permission = keyof typeof PERMISSIONS;
 
 export const hasPermission = (userRole: UserRole, permission: Permission) => {
+  if (!PERMISSIONS[permission]) {
+    return false;
+  }
   return PERMISSIONS[permission].includes(userRole);
 };

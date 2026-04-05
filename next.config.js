@@ -1,20 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+
+  // Required for Firebase Studio / Cloud Workstations preview
+  allowedDevOrigins: [
+    'localhost',
+    '127.0.0.1',
+    '*.cloudworkstations.dev',
+    '**.cloudworkstations.dev',
+  ],
+
   images: {
     remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: '*.google.com',
-      },
-      {
-        protocol: 'https',
-        hostname: 'images.unsplash.com',
-      },
+      // Existing rules
+      { protocol: 'https', hostname: '*.google.com' },
+      { protocol: 'https', hostname: 'images.unsplash.com' },
+      
+      // THE FIX: Adding a rule to allow images from the local dev server
+      { protocol: 'http', hostname: 'localhost' },
     ],
   },
-  // Add this for Firebase hosting
-  output: 'standalone',
-}
+};
 
-module.exports = nextConfig
+module.exports = nextConfig;

@@ -1,53 +1,47 @@
-'use client';
 
-import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
 import { getWorkOrders } from "@/lib/actions/workOrders";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/DataTable";
-import { columns } from "./columns";
-import { useUser } from '@/hooks/useUser';
-import { hasPermission } from '@/lib/auth/roles';
-import { WorkOrder } from '@/lib/types/workOrder';
+import { WorkOrdersClientPage } from '@/app/dashboard/work-orders/components/WorkOrdersClientPage';
+import { Skeleton } from '@/components/ui/skeleton';
 
-export default function WorkOrdersPage() {
-  const { user } = useUser();
-  const [workOrders, setWorkOrders] = useState<WorkOrder[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadWorkOrders() {
-      try {
-        const fetchedWorkOrders = await getWorkOrders();
-        setWorkOrders(fetchedWorkOrders);
-      } catch (error) {
-        console.error("Failed to fetch work orders:", error);
-      }
-      setLoading(false);
-    }
-    loadWorkOrders();
-  }, []);
-
-  const canCreate = user && user.role && hasPermission(user.role, 'work-orders:create');
+export default async function WorkOrdersPage({
+  searchParams,
+}: {
+  searchParams?: {
+    page?: string;
+    limit?: string;
+  };
+}) {
+  const currentPage = Number(searchParams?.page) || 1;
+  const limit = Number(searchParams?.limit) || 10;
+  const { data, totalPages } = await getWorkOrders({ page: currentPage, limit });
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Work Orders</CardTitle>
-        {canCreate && (
-          <Link href="/dashboard/work-orders/new">
-            <Button>Add Work Order</Button>
-          </Link>
-        )}
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-            <div className="h-96 bg-gray-200 dark:bg-gray-800 rounded-md animate-pulse" />
-        ) : (
-            <DataTable columns={columns} data={workOrders} />
-        )}
-      </CardContent>
-    </Card>
+    <Suspense fallback={<LoadingState />}>
+      <WorkOrdersClientPage initialWorkOrders={data} totalPages={totalPages} />
+    </Suspense>
   );
 }
+
+const LoadingState = () => (
+    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+        <div className="flex items-center justify-between">
+            <Skeleton className="h-8 w-48" />
+            <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {[...Array(8)].map((_, i) => (
+                <div key={i} className="rounded-lg p-6 flex flex-col justify-between h-48 bg-slate-800/75 backdrop-blur-lg border border-slate-300/20">
+                    <div className='space-y-3'>
+                        <Skeleton className="h-5 w-3/4" />
+                        <Skeleton className="h-4 w-1/2" />
+                    </div>
+                    <div className='mt-4 flex justify-between items-center'>
+                        <Skeleton className="h-4 w-1/4" />
+                        <Skeleton className="h-6 w-1/4" />
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+);

@@ -1,29 +1,46 @@
 
 import * as admin from 'firebase-admin';
+import { User } from "@/lib/types/user";
 
-const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+// Import the fresh service account key (place serviceAccountKey.json in project root)
+import serviceAccountJson from '../../../serviceAccountKey.json' assert { type: 'json' };
+
+const serviceAccount = serviceAccountJson as admin.ServiceAccount;
 
 if (!admin.apps.length) {
-  if (!process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID) {
-    throw new Error('NEXT_PUBLIC_FIREBASE_PROJECT_ID is not defined');
-  }
-  if (!process.env.FIREBASE_CLIENT_EMAIL) {
-    throw new Error('FIREBASE_CLIENT_EMAIL is not defined');
-  }
-  if (!privateKey) {
-    throw new Error('FIREBASE_PRIVATE_KEY is not defined');
-  }
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert(serviceAccount),
+      databaseURL: `https://${serviceAccount.project_id}.firebaseio.com`,
+    });
 
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: privateKey.replace(/\\n/g, '\n'),
-    }),
-    storageBucket: `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID}.appspot.com`,
-  });
+    console.log(`✅ Firebase Admin SDK initialized successfully (project: ${serviceAccount.project_id})`);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+        console.error('❌ Firebase Admin SDK initialization FAILED:', error.message);
+    }
+    throw error;
+  }
 }
 
-export const auth = admin.auth();
+export const adminAuth = admin.auth();
 export const db = admin.firestore();
-export const storage = admin.storage();
+
+export async function getUser(uid: string): Promise<User | null> {
+  try {
+    const firebaseUser = await adminAuth.getUser(uid);
+    const customClaims = (firebaseUser.customClaims || { role: "user" }) as { role: string };
+
+    return {
+      uid: firebaseUser.uid,
+      email: firebaseUser.email || null,
+      displayName: firebaseUser.displayName || null,
+      photoURL: firebaseUser.photoURL || null,
+      role: customClaims.role,
+      disabled: firebaseUser.disabled,
+    };
+  } catch (error) {
+    console.error(`Error getting user ${uid}:`, error);
+    return null;
+  }
+}

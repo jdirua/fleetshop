@@ -10,6 +10,7 @@ import {
   useReactTable,
   SortingState,
   ColumnFiltersState,
+  Column,
 } from "@tanstack/react-table";
 
 import {
@@ -31,6 +32,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { ArrowDownIcon, ArrowUpIcon } from "lucide-react";
 
 export interface DataTableFilter {
   columnId: string;
@@ -43,6 +46,42 @@ interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   filterColumns?: DataTableFilter[];
+}
+
+interface DataTableColumnHeaderProps<TData, TValue>
+  extends React.HTMLAttributes<HTMLDivElement> {
+  column: Column<TData, TValue>
+  title: string
+}
+
+export function DataTableColumnHeader<TData, TValue>({
+  column,
+  title,
+  className,
+}: DataTableColumnHeaderProps<TData, TValue>) {
+  if (!column.getCanSort()) {
+    return <div className={cn(className)}>{title}</div>
+  }
+
+  return (
+    <div className={cn("flex items-center space-x-2", className)}>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="-ml-3 h-8 data-[state=open]:bg-accent"
+            onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+          >
+            <span>{title}</span>
+            {column.getIsSorted() === "desc" ? (
+              <ArrowDownIcon className="ml-2 h-4 w-4" />
+            ) : column.getIsSorted() === "asc" ? (
+              <ArrowUpIcon className="ml-2 h-4 w-4" />
+            ) : (
+              <ArrowUpIcon className="ml-2 h-4 w-4" />
+            )}
+          </Button>
+    </div>
+  )
 }
 
 export function DataTable<TData, TValue>({

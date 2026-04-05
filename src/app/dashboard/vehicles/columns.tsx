@@ -5,7 +5,7 @@ import { Vehicle } from '@/lib/types/vehicle';
 import { Button } from '@/components/ui/button';
 import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { useUser } from '@/hooks/useUser';
+import { useUser } from '@/context/UserContext';
 import { hasPermission } from '@/lib/auth/roles';
 import Link from 'next/link';
 

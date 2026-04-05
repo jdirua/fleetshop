@@ -1,20 +1,32 @@
-'use client';
+import { redirect } from 'next/navigation';
+import Header from "@/components/header";
+import Sidebar from "@/components/sidebar";
+import { getCurrentUser } from '@/lib/auth/server';
+import { UserProvider } from '@/context/UserContext';
+import { ReactNode } from 'react';
 
-import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar";
-
-export default function DashboardLayout({
+export default async function DashboardLayout({ 
   children,
-}: { 
-  children: React.ReactNode;
+}: {
+  children: ReactNode;
 }) {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-800">
-      <Sidebar />
-      <div className="flex-1 flex flex-col">
-        <Header />
-        <main className="p-6">{children}</main>
+    <UserProvider user={user}>
+      <div className="flex h-screen text-foreground gravel">
+        <Sidebar />
+        <div className="flex flex-col flex-1 min-w-0">
+          <Header />
+          <main className="flex-1 overflow-y-auto p-8">
+            {children}
+          </main>
+        </div>
       </div>
-    </div>
+    </UserProvider>
   );
 }

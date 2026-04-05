@@ -6,16 +6,17 @@ import { z } from 'zod';
 import { db } from '@/lib/firebase/admin-sdk';
 import { WorkOrder } from '@/lib/types/workOrder';
 import { logActivity } from './activityLogs';
+import { Vehicle } from '@/lib/types/vehicle';
 
 const WorkOrderSchema = z.object({
   id: z.string(),
   title: z.string().min(1, 'Title is required'),
-  description: z.string().min(1, 'Description is required'),
+  description: z.string().optional(),
   vehicleId: z.string().min(1, 'Vehicle is required'),
   assignedMechanicId: z.string().optional(),
-  status: z.enum(['draft', 'assigned', 'in-progress', 'paused', 'review', 'completed', 'archived']),
-  priority: z.enum(['low', 'medium', 'high', 'emergency']),
-  cost: z.coerce.number().min(0, 'Cost must be a positive number'),
+  status: z.enum(['open', 'in-progress', 'on-hold', 'completed', 'cancelled']),
+  priority: z.enum(['low', 'medium', 'high']),
+  cost: z.coerce.number().min(0, 'Cost must be a non-negative number.'),
   startDate: z.string().optional(),
   completionDate: z.string().optional(),
   createdAt: z.string(),
@@ -23,13 +24,14 @@ const WorkOrderSchema = z.object({
 
 const CreateWorkOrderSchema = WorkOrderSchema.omit({ id: true, createdAt: true });
 
-export async function createWorkOrder(prevState: any, formData: FormData) {
+export async function createWorkOrder(prevState: { errors?: Record<string, string[]>; message?: string; }, formData: FormData) {
   const validatedFields = CreateWorkOrderSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
+    console.log(validatedFields.error.flatten().fieldErrors);
     return {
       success: false,
-      message: "Validation failed.",
+      message: "Validation failed. Please check the form and try again.",
       errors: validatedFields.error.flatten().fieldErrors,
     };
   }
@@ -54,18 +56,37 @@ export async function createWorkOrder(prevState: any, formData: FormData) {
     console.error('Error creating work order:', error);
     return { 
       success: false,
-      message: 'An unexpected error occurred.',
+      message: 'An unexpected error occurred while creating the work order.',
     };
   }
 }
 
-export async function getWorkOrders() {
+export async function getWorkOrders({ page = 1, limit = 10 }: { page?: number; limit?: number } = {}): Promise<{ data: WorkOrder[], totalPages: number }> {
   try {
-    const snapshot = await db.collection('workOrders').get();
-    if (snapshot.empty) {
-      return [];
+    const workOrdersRef = db.collection('workOrders');
+    
+    // Get the total count of documents for pagination
+    const snapshot = await workOrdersRef.get();
+    const totalWorkOrders = snapshot.size;
+
+    const totalPages = Math.ceil(totalWorkOrders / limit);
+    const offset = (page - 1) * limit;
+
+    const workOrdersSnapshot = await workOrdersRef.orderBy('createdAt', 'desc').limit(limit).offset(offset).get();
+    if (workOrdersSnapshot.empty) {
+      return { data: [], totalPages: 0 };
     }
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as WorkOrder[];
+    
+    const data = await Promise.all(workOrdersSnapshot.docs.map(async (doc) => {
+      const workOrder = { id: doc.id, ...doc.data() } as WorkOrder;
+      const vehicleDoc = await db.collection('vehicles').doc(workOrder.vehicleId).get();
+      if (vehicleDoc.exists) {
+        workOrder.vehicle = { id: vehicleDoc.id, ...vehicleDoc.data() } as Vehicle;
+      }
+      return workOrder;
+    }));
+
+    return { data, totalPages };
   } catch (error) {
     console.error('Error fetching work orders:', error);
     throw new Error('Could not fetch work orders.');
@@ -78,7 +99,12 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | null> {
     if (!doc.exists) {
       return null;
     }
-    return { id: doc.id, ...doc.data() } as WorkOrder;
+    const workOrder = { id: doc.id, ...doc.data() } as WorkOrder;
+    const vehicleDoc = await db.collection('vehicles').doc(workOrder.vehicleId).get();
+    if (vehicleDoc.exists) {
+      workOrder.vehicle = { id: vehicleDoc.id, ...vehicleDoc.data() } as Vehicle;
+    }
+    return workOrder;
   } catch (error) {
     console.error('Error fetching work order:', error);
     throw new Error('Could not fetch work order.');
@@ -86,7 +112,8 @@ export async function getWorkOrder(id: string): Promise<WorkOrder | null> {
 }
 
 export async function updateWorkOrder(id: string, formData: FormData) {
-  const validatedFields = CreateWorkOrderSchema.partial().safeParse(Object.fromEntries(formData.entries()));
+  const UpdateWorkOrderSchema = CreateWorkOrderSchema.partial();
+  const validatedFields = UpdateWorkOrderSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (!validatedFields.success) {
     return { 

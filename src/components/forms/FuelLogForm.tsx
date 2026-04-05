@@ -1,98 +1,67 @@
 
 'use client';
 
-import { useFormState, useFormStatus } from 'react-dom';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-import { FuelLog, Vehicle, FormState } from '@/lib/types';
-import { createFuelLog, updateFuelLog } from '@/lib/actions/fuelLogs';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { Vehicle } from "@/lib/types/vehicle";
+import { FuelLogFormState } from "@/lib/actions/fuelLogs";
+import { FuelLog } from "@/lib/types/fuelLog";
 
 interface FuelLogFormProps {
   vehicles: Vehicle[];
+  state: FuelLogFormState;
   fuelLog?: FuelLog;
 }
 
-const initialState: FormState = { message: null, errors: {} };
-
-function SubmitButton({ isEditing }: { isEditing: boolean }) {
-  const { pending } = useFormStatus();
-
+export function FuelLogForm({ vehicles, state, fuelLog }: FuelLogFormProps) {
   return (
-    <Button type="submit" disabled={pending}>
-      {pending ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Fuel Log' : 'Create Fuel Log')}
-    </Button>
-  );
-}
-
-export function FuelLogForm({ vehicles, fuelLog }: FuelLogFormProps) {
-  const router = useRouter();
-  const action = fuelLog ? updateFuelLog.bind(null, fuelLog.id) : createFuelLog;
-  const [state, dispatch] = useFormState(action, initialState);
-
-  useEffect(() => {
-    if (state?.message?.includes('successfully')) {
-      router.push('/dashboard/fuel-logs');
-    }
-  }, [state, router]);
-
-  return (
-    <form action={dispatch} className="space-y-6 bg-white p-6 rounded-lg shadow-md">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="grid gap-4 py-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
           <Label htmlFor="vehicleId">Vehicle</Label>
           <Select name="vehicleId" defaultValue={fuelLog?.vehicleId}>
-            <SelectTrigger id="vehicleId">
+            <SelectTrigger>
               <SelectValue placeholder="Select a vehicle" />
             </SelectTrigger>
             <SelectContent>
               {vehicles.map((vehicle) => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.make} {vehicle.model} ({vehicle.registration})
+                  {vehicle.name} ({vehicle.make} {vehicle.model})
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {state.errors?.vehicleId && <p className="text-sm font-medium text-red-500">{state.errors.vehicleId[0]}</p>}
+          {state.errors?.vehicleId && <p className="text-sm text-red-500">{state.errors.vehicleId}</p>}
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="date">Date</Label>
-          <Input type="date" id="date" name="date" defaultValue={fuelLog?.date ? new Date(fuelLog.date).toISOString().split('T')[0] : ''} />
-          {state.errors?.date && <p className="text-sm font-medium text-red-500">{state.errors.date[0]}</p>}
+          <Input id="date" name="date" type="date" defaultValue={fuelLog?.date} required />
+          {state.errors?.date && <p className="text-sm text-red-500">{state.errors.date}</p>}
         </div>
-
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="liters">Liters</Label>
-          <Input type="number" id="liters" name="liters" step="0.01" defaultValue={fuelLog?.liters} />
-          {state.errors?.liters && <p className="text-sm font-medium text-red-500">{state.errors.liters[0]}</p>}
+          <Label htmlFor="gallons">Gallons</Label>
+          <Input id="gallons" name="gallons" type="number" step="0.01" defaultValue={fuelLog?.gallons} required />
+          {state.errors?.gallons && <p className="text-sm text-red-500">{state.errors.gallons}</p>}
         </div>
-
         <div className="space-y-2">
           <Label htmlFor="cost">Total Cost</Label>
-          <Input type="number" id="cost" name="cost" step="0.01" defaultValue={fuelLog?.cost} />
-          {state.errors?.cost && <p className="text-sm font-medium text-red-500">{state.errors.cost[0]}</p>}
-        </div>
-
-        <div className="space-y-2 md:col-span-2">
-          <Label htmlFor="odometer">Odometer (in km)</Label>
-          <Input type="number" id="odometer" name="odometer" defaultValue={fuelLog?.odometer} />
-          {state.errors?.odometer && <p className="text-sm font-medium text-red-500">{state.errors.odometer[0]}</p>}
+          <Input id="cost" name="cost" type="number" step="0.01" defaultValue={fuelLog?.cost} required />
+          {state.errors?.cost && <p className="text-sm text-red-500">{state.errors.cost}</p>}
         </div>
       </div>
-
-      <div className="flex items-center justify-end space-x-4">
-        <SubmitButton isEditing={!!fuelLog} />
+      <div className="space-y-2">
+          <Label htmlFor="odometer">Odometer Reading</Label>
+          <Input id="odometer" name="odometer" type="number" defaultValue={fuelLog?.odometer} required />
+          {state.errors?.odometer && <p className="text-sm text-red-500">{state.errors.odometer}</p>}
+        </div>
+      <div className="space-y-2">
+        <Label htmlFor="notes">Notes</Label>
+        <Textarea id="notes" name="notes" placeholder="Add any relevant notes..." defaultValue={fuelLog?.notes} />
       </div>
-
-      {state.message && !state.message.includes('successfully') && (
-          <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
-              <p className="text-sm font-medium text-red-600">{state.message}</p>
-          </div>
-      )}
-    </form>
+    </div>
   );
 }

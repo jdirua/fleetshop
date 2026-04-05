@@ -11,7 +11,10 @@
     pkgs.bun
   ];
   # Sets environment variables in the workspace
-  env = {};
+  env = {
+    # This is the standard way to provide credentials to Google libraries.
+    GOOGLE_APPLICATION_CREDENTIALS = "./ServiceaccountKey.json";
+  };
   idx = {
     # Search for the extensions you want on https://open-vsx.org/ and use "publisher.id"
     extensions = [

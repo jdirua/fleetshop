@@ -1,73 +1,109 @@
-
 'use server';
 
 import { db, storage } from '@/lib/firebase/admin-sdk';
-import { logActivity } from './activityLogs';
-import { Document } from '@/lib/types/document';
+import { Document } from '@/lib/types';
+import { v4 as uuidv4 } from 'uuid';
 
-export async function getDocumentsFor(collection: string, id: string): Promise<Document[]> {
-    try {
-        const snapshot = await db.collection(collection).doc(id).collection('documents').get();
-        if (snapshot.empty) {
-            return [];
-        }
-        return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as Document));
-    } catch (error) {
-        console.error('Error fetching documents:', error);
-        throw new Error('Could not fetch documents.');
+export async function getDocumentsFor(relatedToType: string, relatedToId: string): Promise<Document[]> {
+  try {
+    const snapshot = await db.collection('documents')
+      .where('relatedTo.type', '==', relatedToType)
+      .where('relatedTo.id', '==', relatedToId)
+      .get();
+    if (snapshot.empty) {
+      return [];
     }
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Document[];
+  } catch (error) {
+    console.error('Error fetching documents for:', error);
+    return [];
+  }
 }
 
-export async function uploadDocument(file: File, relatedTo: { collection: string, id: string }): Promise<Document> {
-    try {
-        const { collection, id } = relatedTo;
-        const filePath = `${collection}/${id}/${file.name}`;
-        const fileRef = storage.bucket().file(filePath);
+export async function getDocuments({ userId, page = 1, limit = 10 }: { userId: string; page?: number; limit?: number }): Promise<{ documents: Document[], totalPages: number }> {
+  if (!userId) {
+    return { documents: [], totalPages: 0 };
+  }
+  try {
+    const documentsRef = db.collection('documents').where('userId', '==', userId);
+    
+    const snapshot = await documentsRef.get();
+    const totalDocuments = snapshot.size;
+    const totalPages = Math.ceil(totalDocuments / limit);
 
-        const fileBuffer = Buffer.from(await file.arrayBuffer());
+    const docsSnapshot = await documentsRef
+        .orderBy('uploadedAt', 'desc')
+        .limit(limit)
+        .offset((page - 1) * limit)
+        .get();
 
-        await fileRef.save(fileBuffer, {
-            metadata: {
-                contentType: file.type,
-            },
-        });
+    if (docsSnapshot.empty) {
+        return { documents: [], totalPages };
+    }
 
-        const [fileUrl] = await fileRef.getSignedUrl({ action: 'read', expires: '03-09-2491' });
-
-        const docRef = await db.collection(collection).doc(id).collection('documents').add({
-            fileName: file.name,
-            fileType: file.type,
-            filePath,
-            fileUrl,
-            createdAt: new Date().toISOString(),
-        });
-
-        await logActivity('upload', { type: 'document', id: docRef.id });
-
-        return { 
-            id: docRef.id, 
-            fileName: file.name, 
-            fileType: file.type, 
-            filePath, 
-            fileUrl, 
-            createdAt: new Date().toISOString() 
+    const documents = docsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+            id: doc.id,
+            ...data,
+            uploadedAt: data.uploadedAt.toDate(),
         } as Document;
-    } catch (error) {
-        console.error('Error uploading document:', error);
-        throw new Error('Could not upload document.');
-    }
+    });
+
+    return { documents, totalPages };
+  } catch (error) {
+    console.error('Error fetching documents:', error);
+    throw error;
+  }
 }
 
-export async function deleteDocument(vendorId: string, documentId: string, filePath: string) {
+export async function uploadDocument(
+    userId: string, 
+    name: string, 
+    category: string, 
+    file: File,
+    relatedToType?: string,
+    relatedToId?: string
+): Promise<Document> {
+    const fileId = uuidv4();
+    const filePath = `documents/${userId}/${fileId}-${file.name}`;
+    const fileBuffer = Buffer.from(await file.arrayBuffer());
+
+    const fileRef = storage.bucket().file(filePath);
+    await fileRef.save(fileBuffer, {
+        metadata: {
+            contentType: file.type,
+        },
+    });
+
+    const [url] = await fileRef.getSignedUrl({ action: 'read', expires: '03-09-2491' });
+
+    const docRef = db.collection('documents').doc();
+    const newDocument: Omit<Document, 'id'> = {
+        userId,
+        name,
+        category,
+        url,
+        filePath,
+        uploadedAt: new Date(),
+        ...(relatedToType && relatedToId && { relatedTo: { type: relatedToType, id: relatedToId } })
+    };
+
+    await docRef.set(newDocument);
+
+    return {
+        id: docRef.id,
+        ...newDocument
+    };
+}
+
+export async function deleteDocument(documentId: string, filePath: string): Promise<void> {
     try {
-        // Delete file from storage
-        await storage.bucket().file(filePath).delete();
+        const docRef = db.collection('documents').doc(documentId);
+        await docRef.delete();
 
-        // Delete document from firestore
-        await db.collection('vendors').doc(vendorId).collection('documents').doc(documentId).delete();
-
-        await logActivity('delete', { type: 'document', id: documentId });
-
+        const fileRef = storage.bucket().file(filePath);
+        await fileRef.delete();
     } catch (error) {
         console.error('Error deleting document:', error);
         throw new Error('Could not delete document.');

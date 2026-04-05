@@ -1,59 +1,64 @@
-
 'use server';
 
 import { revalidatePath } from 'next/cache';
 import { z } from 'zod';
 import { db } from '@/lib/firebase/admin-sdk';
-import { Vendor } from '@/lib/types';
+import { Vendor } from '@/lib/types/vendor';
 import { logActivity } from './activityLogs';
 
+
 const VendorSchema = z.object({
-  id: z.string(),
-  name: z.string().min(1, 'Vendor name is required'),
-  contactName: z.string().optional(),
-  contactEmail: z.string().email('Invalid email address').optional().or(z.literal('')),
-  contactPhone: z.string().optional(),
-  createdAt: z.string(),
+    name: z.string().min(1, 'Vendor name is required'),
+    contactName: z.string().optional(),
+    contactEmail: z.string().email({ message: "Invalid email address" }).optional().or(z.literal('')),
+    contactPhone: z.string().optional(),
 });
 
-const CreateVendorSchema = VendorSchema.omit({ id: true, createdAt: true });
-
-export async function createVendor(formData: FormData) {
-  const validatedFields = CreateVendorSchema.safeParse(Object.fromEntries(formData.entries()));
-
-  if (!validatedFields.success) {
-    return { errors: validatedFields.error.flatten().fieldErrors };
-  }
-
+export async function updateVendor(id: string, data: Partial<Vendor>) {
   try {
-    const newVendorData = validatedFields.data;
-    const docRef = await db.collection('vendors').add({
-      ...newVendorData,
-      createdAt: new Date().toISOString(),
-    });
-
-    await logActivity('Created Vendor', { type: 'vendor', id: docRef.id });
-
+    await db.collection('vendors').doc(id).update(data);
+    await logActivity('Updated Vendor', { type: 'vendor', id });
     revalidatePath('/dashboard/vendors');
-    return { message: 'Vendor created successfully', vendorId: docRef.id };
-
   } catch (error) {
-    console.error('Error creating vendor:', error);
-    return { errors: { _form: ['An unexpected error occurred.'] } };
+    console.error("Error updating vendor:", error);
+    throw new Error("Could not update vendor.");
   }
 }
 
-export async function getVendors() {
-  try {
-    const snapshot = await db.collection('vendors').get();
-    if (snapshot.empty) {
-      return [];
+export async function createVendor(prevState: { errors?: Record<string, string[]>; message?: string; }, formData: FormData) {
+    const validatedFields = VendorSchema.safeParse(Object.fromEntries(formData.entries()));
+
+    if (!validatedFields.success) {
+        return {
+            success: false,
+            message: "Validation failed. Please check the form and try again.",
+            errors: validatedFields.error.flatten().fieldErrors,
+        };
     }
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Vendor[];
-  } catch (error) {
-    console.error('Error fetching vendors:', error);
-    throw new Error('Could not fetch vendors.');
-  }
+
+    try {
+        const newVendorData = validatedFields.data;
+        const docRef = await db.collection('vendors').add({
+            ...newVendorData,
+            createdAt: new Date().toISOString(),
+        });
+
+        await logActivity('Created Vendor', { type: 'vendor', id: docRef.id });
+
+        revalidatePath('/dashboard/vendors');
+        return {
+            success: true,
+            message: 'Vendor created successfully',
+            vendorId: docRef.id
+        };
+
+    } catch (error) {
+        console.error('Error creating vendor:', error);
+        return {
+            success: false,
+            message: 'An unexpected error occurred while creating the vendor.',
+        };
+    }
 }
 
 export async function getVendor(id: string): Promise<Vendor | null> {
@@ -64,40 +69,19 @@ export async function getVendor(id: string): Promise<Vendor | null> {
     }
     return { id: doc.id, ...doc.data() } as Vendor;
   } catch (error) {
-    console.error('Error fetching vendor:', error);
-    throw new Error('Could not fetch vendor.');
+    console.error("Error fetching vendor:", error);
+    return null;
   }
 }
 
-export async function updateVendor(id: string, formData: FormData) {
-  const validatedFields = CreateVendorSchema.partial().safeParse(Object.fromEntries(formData.entries()));
+export async function getVendors({ page = 1, limit = 10 }: { page: number, limit: number }): Promise<{ data: Vendor[], totalPages: number }> {
+    const snapshot = await db.collection('vendors').get();
+    const vendors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Vendor[];
+    const totalPages = Math.ceil(vendors.length / limit);
+    const paginatedVendors = vendors.slice((page - 1) * limit, page * limit);
 
-  if (!validatedFields.success) {
-    return { errors: validatedFields.error.flatten().fieldErrors };
-  }
-
-  try {
-    await db.collection('vendors').doc(id).update(validatedFields.data);
-    await logActivity('Updated Vendor', { type: 'vendor', id });
-    revalidatePath('/dashboard/vendors');
-    revalidatePath(`/dashboard/vendors/${id}/edit`);
-    return { message: 'Vendor updated successfully' };
-
-  } catch (error) {
-    console.error('Error updating vendor:', error);
-    return { errors: { _form: ['An unexpected error occurred.'] } };
-  }
-}
-
-export async function deleteVendor(id: string) {
-  try {
-    await db.collection('vendors').doc(id).delete();
-    await logActivity('Deleted Vendor', { type: 'vendor', id });
-    revalidatePath('/dashboard/vendors');
-    return { message: 'Vendor deleted successfully' };
-
-  } catch (error) {
-    console.error('Error deleting vendor:', error);
-    return { errors: { _form: ['An unexpected error occurred.'] } };
-  }
+    return {
+        data: paginatedVendors,
+        totalPages
+    };
 }

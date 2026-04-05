@@ -1,111 +1,93 @@
-
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Car, Wrench, Package, Building, Fuel, FileText } from 'lucide-react';
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Truck, Wrench, ClipboardList } from 'lucide-react';
 
 export default function HomePage() {
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50">
-      <main className="flex-1">
-        <section
-          className="w-full py-20 md:py-32 lg:py-40 bg-cover bg-center bg-no-repeat"
-          style={{
-            backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1599793393523-7a2d4886c92a?q=80&w=2070&auto=format&fit=crop')`,
-          }}
-        >
-          <div className="container mx-auto px-4 md:px-6 text-center text-white">
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tighter mb-4">FleetShop</h1>
-            <p className="max-w-3xl mx-auto text-lg md:text-xl text-gray-200 mb-8">
-              The all-in-one solution for managing your vehicle fleet with unparalleled efficiency and control.
-            </p>
-            <div className="flex justify-center gap-4">
-              <Link href="/login">
-                <Button size="lg">Get Started</Button>
-              </Link>
-              <Button size="lg" variant="outline">
+    <div className="relative min-h-screen w-full text-white overflow-hidden">
+      <div
+        className="absolute inset-0 z-0 bg-cover bg-center"
+        style={{
+          backgroundImage: `
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.9)),
+            url('/concretetruck.png')
+          `,
+        }}
+      />
+
+      {/* Main Content container */}
+      <div className="relative z-20 flex flex-col min-h-screen items-center justify-center p-4 sm:p-6 md:p-8 pt-32 pb-24">
+        <header className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
+          <h1 className="text-2xl font-bold tracking-tighter text-white">FleetShop</h1>
+        </header>
+
+        {/* Main Hero Glass Card */}
+        <main className="w-full max-w-4xl bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 shadow-2xl p-8 sm:p-12 text-center mb-16">
+          <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tighter mb-4">
+            The Future of Fleet Management is Here.
+          </h1>
+          <p className="text-lg sm:text-xl text-slate-300 max-w-2xl mx-auto mb-8">
+            FleetShop provides an all-in-one solution to manage your vehicles, track maintenance, and optimize your operations with powerful AI-driven insights.
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Link href="/login">
+              <Button size="lg" className="bg-violet-600 hover:bg-violet-700 px-10 py-6 text-lg font-semibold w-full sm:w-auto shadow-lg shadow-violet-500/50">
+                Get Started
+              </Button>
+            </Link>
+            <Link href="/coming-soon">
+              <Button 
+                size="lg" 
+                className="bg-blue-900 hover:bg-blue-950 text-white font-semibold px-10 py-6 text-lg w-full sm:w-auto shadow-lg shadow-blue-900/50"
+              >
                 Learn More
               </Button>
-            </div>
-          </div>
-        </section>
-
-        <section id="features" className="py-16 md:py-24">
-          <div className="container mx-auto px-4 md:px-6">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-bold">At a Glance</h2>
-              <p className="text-gray-600 mt-2">A real-time overview of your fleet&apos;s status.</p>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-               <FeatureCard
-                icon={<Car className="w-8 h-8 text-blue-500" />}
-                title="Vehicle Management"
-                value="Centralized"
-                description="Keep detailed records of every vehicle in your fleet."
-              />
-              <FeatureCard
-                icon={<Wrench className="w-8 h-8 text-green-500" />}
-                title="Work Orders"
-                value="Streamlined"
-                description="Create, assign, and track maintenance and repair orders."
-              />
-              <FeatureCard
-                icon={<Package className="w-8 h-8 text-yellow-500" />}
-                title="Inventory Control"
-                value="Optimized"
-                description="Manage parts and supplies to reduce waste and downtime."
-              />
-              <FeatureCard
-                icon={<Building className="w-8 h-8 text-purple-500" />}
-                title="Vendor Management"
-                value="Organized"
-                description="Maintain a database of preferred vendors and suppliers."
-              />
-              <FeatureCard
-                icon={<Fuel className="w-8 h-8 text-red-500" />}
-                title="Fuel Logging"
-                value="Accurate"
-                description="Track fuel consumption and costs across your entire fleet."
-              />
-              <FeatureCard
-                icon={<FileText className="w-8 h-8 text-indigo-500" />}
-                title="Document Storage"
-                value="Secure"
-                description="Store important documents like titles and registrations."
-              />
-            </div>
-          </div>
-        </section>
-      </main>
-
-      <footer className="bg-gray-800 text-white py-6">
-        <div className="container mx-auto px-4 md:px-6 flex justify-between items-center">
-          <p>&copy; 2024 FleetShop. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-gray-300">
-              Privacy Policy
-            </Link>
-            <Link href="#" className="hover:text-gray-300">
-              Terms of Service
             </Link>
           </div>
-        </div>
-      </footer>
+        </main>
+
+        {/* Key Features Section with Glass Cards */}
+        <section className="w-full max-w-6xl">
+          <h2 className="text-3xl font-bold text-center mb-10">Key Features</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <FeatureCard
+              icon={<Truck className="w-8 h-8 text-violet-400" />}
+              title="Vehicle Management"
+              description="Keep a detailed record of all your vehicles, including specifications, service history, and assigned drivers."
+            />
+            <FeatureCard
+              icon={<Wrench className="w-8 h-8 text-violet-400" />}
+              title="Work Order Tracking"
+              description="Create, assign, and monitor work orders for maintenance and repairs."
+            />
+            <FeatureCard
+              icon={<ClipboardList className="w-8 h-8 text-violet-400" />}
+              title="Inventory Control"
+              description="Manage spare parts with automated low-stock alerts and consumption reports."
+            />
+          </div>
+        </section>
+        
+        <footer className="absolute bottom-0 py-4 text-center text-slate-400 text-sm">
+          © {new Date().getFullYear()} FleetShop. All rights reserved.
+        </footer>
+      </div>
     </div>
   );
 }
 
-function FeatureCard({ icon, title, value, description }: { icon: React.ReactNode; title: string; value: string; description: string }) {
+function FeatureCard({ icon, title, description }: { 
+  icon: React.ReactNode; 
+  title: string; 
+  description: string;
+}) {
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300">
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
+    <div className="bg-black/30 backdrop-blur-sm border border-white/10 p-8 rounded-2xl text-center items-center flex flex-col shadow-xl hover:border-violet-400/50 transition-colors">
+      <div className="mb-4 flex items-center justify-center w-16 h-16 bg-violet-950/60 rounded-full">
         {icon}
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        <p className="text-xs text-gray-500">{description}</p>
-      </CardContent>
-    </Card>
+      </div>
+      <h3 className="text-xl font-semibold mb-2">{title}</h3>
+      <p className="text-slate-400 text-sm">{description}</p>
+    </div>
   );
 }

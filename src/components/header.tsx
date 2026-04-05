@@ -10,20 +10,20 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { useUser } from "@/hooks/useUser";
+import { useUser } from "@/context/UserContext";
 
-export function Header() {
+export default function Header() {
   const { user } = useUser();
 
   return (
-    <header className="flex items-center justify-between p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
+    <header className="flex items-center justify-between p-4 bg-secondary isolate relative z-10 shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
       <div>
-        {/* You can add a page title or other elements here */}
+        {/* Page title can go here */}
       </div>
       <div className="flex items-center gap-4">
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="ghost" size="icon">
               <Bell className="h-5 w-5" />
             </Button>
           </DialogTrigger>
@@ -36,7 +36,7 @@ export function Header() {
             </div>
           </DialogContent>
         </Dialog>
-        {user && <p className="text-sm text-gray-500 dark:text-gray-400">{user.email}</p>}
+        {user && <p className="text-sm text-muted-foreground">{user.email}</p>}
         <form action={signOut}>
           <Button variant="outline" type="submit">Sign Out</Button>
         </form>

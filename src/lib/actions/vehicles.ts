@@ -1,3 +1,4 @@
+
 'use server';
 
 import { revalidatePath } from 'next/cache';
@@ -76,13 +77,19 @@ export async function createVehicle(prevState: VehicleFormState, formData: FormD
 }
 
 // --- Server Action to Get All Vehicles ---
-export async function getVehicles() {
+export async function getVehicles({ page = 1, limit = 10 }: { page?: number; limit?: number } = {}): Promise<{ data: Vehicle[], totalPages: number }> {
   try {
-    const snapshot = await db.collection('vehicles').get();
-    if (snapshot.empty) {
-      return [];
+    const vehiclesRef = db.collection('vehicles');
+    const snapshot = await vehiclesRef.get();
+    const totalVehicles = snapshot.size;
+    const totalPages = Math.ceil(totalVehicles / limit);
+
+    const vehiclesSnapshot = await vehiclesRef.limit(limit).offset((page - 1) * limit).get();
+    if (vehiclesSnapshot.empty) {
+      return { data: [], totalPages };
     }
-    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Vehicle[];
+    const data = vehiclesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Vehicle[];
+    return { data, totalPages };
   } catch (error) {
     console.error('Error fetching vehicles:', error);
     throw new Error('Could not fetch vehicles.');
