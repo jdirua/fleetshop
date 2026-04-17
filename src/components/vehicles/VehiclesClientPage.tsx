@@ -18,6 +18,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { AddVehicleWizard } from '@/components/modals/AddVehicleWizard';
 import { PaginationControls } from '@/components/ui/PaginationControls';
+import { EmptyState } from '@/components/ui/empty-state';
 
 // Helper to get status color for the badge
 const getStatusColor = (status: Vehicle['status']) => {
@@ -37,7 +38,7 @@ const getStatusColor = (status: Vehicle['status']) => {
 function VehicleCard({ vehicle }: { vehicle: Vehicle }) {
   return (
     <Link href={`/dashboard/vehicles/${vehicle.id}`} className="block transition-transform duration-200 ease-in-out hover:-translate-y-1">
-        <Card className="h-full flex flex-col glassmorphic">
+        <Card className="h-full flex flex-col">
             <CardHeader>
                 <div className="flex justify-between items-start">
                     <div>
@@ -93,15 +94,15 @@ export function VehiclesClientPage({ initialVehicles, totalPages }: { initialVeh
     };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+    <div className="p-2 md:p-4">
         <AddVehicleWizard 
             isOpen={isWizardOpen} 
             onOpenChange={setIsWizardOpen} 
             onSuccess={handleSuccess} 
         />
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Vehicle Hub</h2>
-        <Button onClick={() => setIsWizardOpen(true)} className="bg-purple-500 hover:bg-purple-600 text-white">
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg px-4 py-2 shadow-lg">Vehicle Hub</h1>
+        <Button onClick={() => setIsWizardOpen(true)} className="bg-purple-500 hover:bg-purple-600 text-white shadow-md transition-all hover:shadow-lg">
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Vehicle
         </Button>
@@ -117,44 +118,32 @@ export function VehiclesClientPage({ initialVehicles, totalPages }: { initialVeh
           <PaginationControls currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
         </>
       ) : (
-        <Card className="glassmorphic min-h-[70vh] flex items-center justify-center text-center">
-          <div className="flex flex-col items-center justify-center p-6">
-            
-            <div className="relative w-28 h-28 flex items-center justify-center">
-              <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-pulse-slow"></div>
-              <Car className="h-16 w-16 text-purple-400" />
-            </div>
-
-            <h3 className="mt-8 text-3xl font-bold">No Vehicles Found</h3>
-            <p className='mt-2 max-w-sm text-lg text-muted-foreground'>
-                Get started by adding your first vehicle to the fleet.
-            </p>
-            
-            <Button onClick={() => setIsWizardOpen(true)} className="mt-8 py-6 px-8 text-lg card-lift bg-purple-500 hover:bg-purple-600 text-white">
-                  <PlusCircle className="mr-3 h-5 w-5" />
-                  Add First Vehicle
-            </Button>
-
-            <div className='mt-12 w-full max-w-2xl'>
-              <p className='text-sm uppercase text-muted-foreground font-semibold tracking-wider'>Once you add a vehicle, you&apos;ll be able to:</p>
-              <div className='mt-4 grid grid-cols-3 gap-4 text-left'>
-                  <div className='glassmorphic rounded-lg p-4 flex items-center space-x-3'>
-                      <Wrench className='h-6 w-6 text-purple-400' />
-                      <span className='font-medium'>Manage Work Orders</span>
-                  </div>
-                  <div className='glassmorphic rounded-lg p-4 flex items-center space-x-3'>
-                      <Fuel className='h-6 w-6 text-purple-400' />
-                      <span className='font-medium'>Log Fuel & Costs</span>
-                  </div>
-                  <div className='glassmorphic rounded-lg p-4 flex items-center space-x-3'>
-                      <ClipboardList className='h-6 w-6 text-purple-400' />
-                      <span className='font-medium'>Track Service History</span>
-                  </div>
-              </div>
-            </div>
-
-          </div>
-        </Card>
+        <EmptyState 
+          title="No Vehicles Found"
+          description="Get started by adding your first vehicle to the fleet."
+          icon={<Car className="h-16 w-16 text-purple-400" />}
+          action={{
+            text: "Add First Vehicle",
+            onClick: () => setIsWizardOpen(true)
+          }}
+          features={{
+            title: "Once you add a vehicle, you'll be able to:",
+            items: [
+              {
+                icon: <Wrench className='h-6 w-6 text-purple-400' />,
+                text: "Manage Work Orders"
+              },
+              {
+                icon: <Fuel className='h-6 w-6 text-purple-400' />,
+                text: "Log Fuel & Costs"
+              },
+              {
+                icon: <ClipboardList className='h-6 w-6 text-purple-400' />,
+                text: "Track Service History"
+              }
+            ]
+          }}
+        />
       )}
     </div>
   );

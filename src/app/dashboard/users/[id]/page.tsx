@@ -1,12 +1,12 @@
 
-import { getUser } from "@/lib/auth/server";
+import { getUserById } from "@/lib/actions/users";
 import { notFound } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UpdateUserForm } from "@/components/users/UpdateUserForm";
 
 export default async function UserPage({ params }: { params: { id: string } }) {
-  const user = await getUser(params.id);
+  const user = await getUserById(params.id);
 
   if (!user) {
     notFound();

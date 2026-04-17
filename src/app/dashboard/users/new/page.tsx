@@ -26,13 +26,14 @@ export default function NewUserPage() {
   const { register, handleSubmit, formState: { errors }, setValue, getValues } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-        role: ROLES.MECHANIC,
+        role: 'mechanic',
     }
   });
 
   const onSubmit = async (data: UserFormData) => {
     try {
-      await createUser({ ...data, uid: '', photoURL: '', disabled: false });
+      const { password, ...userData } = data;
+      await createUser({ ...userData, disabled: false }, password);
       router.push('/dashboard/users');
     } catch (error) {
       console.error('Failed to create user:', error);

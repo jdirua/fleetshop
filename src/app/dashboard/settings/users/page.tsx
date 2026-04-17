@@ -1,39 +1,26 @@
 import { PageTitle } from "@/components/page-title";
+import { ArrowLeft } from "lucide-react";
 import UserList from "./user-list";
-import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
-import { CreateUserDialog } from "@/components/users/CreateUserDialog";
-import { adminAuth } from "@/lib/firebase/admin-sdk";
-import { User } from "@/lib/types/user";
-
-async function getUsers(): Promise<User[]> {
-  const { users } = await adminAuth.listUsers();
-  return users.map((user) => {
-    const role = user.customClaims?.role;
-    return {
-      uid: user.uid,
-      email: user.email || "",
-      displayName: user.displayName,
-      role: typeof role === 'string' ? role : "readonly",
-      disabled: user.disabled,
-    };
-  });
-}
+import { getAllUsers } from "@/lib/actions/users";
+import Link from "next/link";
+import { UserPageActions } from "./UserPageActions";
 
 export default async function UserManagementPage() {
-  const users = await getUsers();
+  const { users, nextPageToken } = await getAllUsers();
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <PageTitle title="User Management" description="Create, edit, and manage user roles and permissions." />
-        <CreateUserDialog asChild>
-          <Button>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add New User
-          </Button>
-        </CreateUserDialog>
+    <div className="p-2 md:p-4">
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-4">
+            <Link href="/dashboard/settings" className="p-2 rounded-full bg-purple-600 hover:bg-purple-700 transition-colors">
+                <ArrowLeft className="h-5 w-5 text-slate-100" />
+                <span className="sr-only">Back to Settings</span>
+            </Link>
+            <PageTitle title="User Management" isHub />
+        </div>
+        <UserPageActions />
       </div>
-      <UserList initialUsers={users} />
+      <UserList initialUsers={users} nextPageToken={nextPageToken} />
     </div>
   );
 }

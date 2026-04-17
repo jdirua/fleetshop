@@ -1,12 +1,12 @@
 
 import { getVendors } from '@/lib/actions/vendors';
-import { VendorsClientPage } from '@/components/vendors/VendorsClientPage';
+import VendorsClientPage from '@/components/vendors/VendorsClientPage';
 import { Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 async function VendorsData({ page, limit }: { page: number; limit: number }) {
   const { data, totalPages } = await getVendors({ page, limit });
-  return <VendorsClientPage initialVendors={data} totalPages={totalPages} />;
+  return <VendorsClientPage initialVendors={data} totalPages={totalPages} currentPage={page} />;
 }
 
 function LoadingState() {

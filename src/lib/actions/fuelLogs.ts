@@ -4,9 +4,8 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { db } from '@/lib/firebase/admin-sdk';
-import { FuelLog } from '@/lib/types';
+import { FuelLog } from '@/lib/types/fuelLog';
 import { logActivity } from './activityLogs';
-import { FuelLogFormState } from '@/lib/actions/fuelLogs';
 import { FirebaseError } from 'firebase-admin/app';
 
 const FuelLogSchema = z.object({
@@ -14,10 +13,24 @@ const FuelLogSchema = z.object({
     invalid_type_error: 'Please select a vehicle.',
   }).min(1, 'Vehicle is required'),
   date: z.string().min(1, 'Date is required'),
-  gallons: z.coerce.number().min(0.01, 'Gallons must be greater than 0'),
-  totalCost: z.coerce.number().min(0.01, 'Total cost must be greater than 0'),
+  liters: z.coerce.number().min(0.01, 'Liters must be greater than 0'),
+  cost: z.coerce.number().min(0.01, 'Total cost must be greater than 0'),
   odometer: z.coerce.number().min(1, 'Odometer reading is required'),
+  notes: z.string().optional(),
 });
+
+export type FuelLogFormState = {
+  errors?: {
+    vehicleId?: string[];
+    date?: string[];
+    liters?: string[];
+    cost?: string[];
+    odometer?: string[];
+    notes?: string[];
+  };
+  message?: string | null;
+  success?: boolean;
+};
 
 export async function getFuelLogs({ page = 1, limit = 10 }: { page?: number; limit?: number } = {}) {
     try {
@@ -56,9 +69,10 @@ export async function createFuelLog(prevState: FuelLogFormState, formData: FormD
   const validatedFields = FuelLogSchema.safeParse({
     vehicleId: formData.get('vehicleId'),
     date: formData.get('date'),
-    gallons: formData.get('gallons'),
-    totalCost: formData.get('totalCost'),
+    liters: formData.get('liters'),
+    cost: formData.get('cost'),
     odometer: formData.get('odometer'),
+    notes: formData.get('notes'),
   });
 
   if (!validatedFields.success) {
@@ -76,8 +90,9 @@ export async function createFuelLog(prevState: FuelLogFormState, formData: FormD
     return { message: 'Fuel log created successfully.', success: true, errors: {} };
   } catch (e: unknown) {
     console.error('Error creating fuel log:', e);
-    if (e instanceof FirebaseError) {
-        return { message: `Error: Failed to create fuel log: ${e.message}`, success: false, errors: {} };
+    if (e && typeof e === 'object' && 'code' in e) {
+        const firebaseError = e as FirebaseError;
+        return { message: `Error: Failed to create fuel log: ${firebaseError.message}`, success: false, errors: {} };
     }
     return { message: 'Error: An unknown error occurred while creating the fuel log.', success: false, errors: {} };
   }
@@ -87,9 +102,10 @@ export async function updateFuelLog(id: string, prevState: FuelLogFormState, for
     const validatedFields = FuelLogSchema.safeParse({
         vehicleId: formData.get('vehicleId'),
         date: formData.get('date'),
-        gallons: formData.get('gallons'),
-        totalCost: formData.get('totalCost'),
+        liters: formData.get('liters'),
+        cost: formData.get('cost'),
         odometer: formData.get('odometer'),
+        notes: formData.get('notes'),
     });
 
     if (!validatedFields.success) {
@@ -108,8 +124,9 @@ export async function updateFuelLog(id: string, prevState: FuelLogFormState, for
         return { message: 'Fuel log updated successfully.', success: true, errors: {} };
     } catch (e: unknown) {
         console.error('Error updating fuel log:', e);
-        if (e instanceof FirebaseError) {
-            return { message: `Error: Failed to update fuel log: ${e.message}`, success: false, errors: {} };
+        if (e && typeof e === 'object' && 'code' in e) {
+            const firebaseError = e as FirebaseError;
+            return { message: `Error: Failed to update fuel log: ${firebaseError.message}`, success: false, errors: {} };
         }
         return { message: 'Error: An unknown error occurred while updating the fuel log.', success: false, errors: {} };
     }
@@ -131,11 +148,10 @@ export async function deleteFuelLog(id: string): Promise<FuelLogFormState> {
         return { message: 'Fuel log deleted successfully.', success: true, errors: {} };
     } catch (e: unknown) {
         console.error('Error deleting fuel log:', e);
-        if (e instanceof FirebaseError) {
-            return { message: `Error: Failed to delete fuel log: ${e.message}`, success: false, errors: {} };
+        if (e && typeof e === 'object' && 'code' in e) {
+            const firebaseError = e as FirebaseError;
+            return { message: `Error: Failed to delete fuel log: ${firebaseError.message}`, success: false, errors: {} };
         }
         return { message: 'Error: An unknown error occurred while deleting the fuel log.', success: false, errors: {} };
     }
 }
-
-export type { FuelLogFormState };

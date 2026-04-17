@@ -1,28 +1,29 @@
-import { redirect } from 'next/navigation';
-import Header from "@/components/header";
-import Sidebar from "@/components/sidebar";
-import { getCurrentUser } from '@/lib/auth/server';
+import Header from '@/components/header';
+import Sidebar from '@/components/sidebar';
 import { UserProvider } from '@/context/UserContext';
-import { ReactNode } from 'react';
+import { getCurrentUser } from '@/lib/auth/server';
+import { redirect } from 'next/navigation';
 
-export default async function DashboardLayout({ 
+export const dynamic = "force-dynamic";
+
+export default async function DashboardLayout({
   children,
 }: {
-  children: ReactNode;
+  children: React.ReactNode;
 }) {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect('/login');
+    return redirect('/login');
   }
 
   return (
-    <UserProvider user={user}>
-      <div className="flex h-screen text-foreground gravel">
+    <UserProvider displayName={user.displayName} email={user.email} role={user.role}>
+      <div className="flex min-h-screen bg-secondary">
         <Sidebar />
-        <div className="flex flex-col flex-1 min-w-0">
+        <div className="flex flex-col flex-1">
           <Header />
-          <main className="flex-1 overflow-y-auto p-8">
+          <main className="flex-1 p-8 gravel">
             {children}
           </main>
         </div>

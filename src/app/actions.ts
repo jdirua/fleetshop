@@ -4,17 +4,14 @@
 import { adminAuth as auth } from "@/lib/firebase/admin-sdk";
 import { z } from "zod";
 import { revalidatePath } from "next/cache";
-import { ROLES } from "@/lib/auth/roles";
 import { FirebaseError } from 'firebase-admin/app';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 
-const rolesArray = Object.values(ROLES) as [string, ...string[]];
-
 const CreateUserSchema = z.object({
   email: z.string().email(),
   displayName: z.string().min(2),
-  role: z.enum(rolesArray).optional(),
+  role: z.string().optional(), // Role is now a simple string
 });
 
 export async function createUser(data: z.infer<typeof CreateUserSchema>) {
@@ -43,7 +40,7 @@ export async function createUser(data: z.infer<typeof CreateUserSchema>) {
 const UpdateUserSchema = z.object({
   displayName: z.string().min(2).optional(),
   email: z.string().email().optional(),
-  role: z.enum(rolesArray).optional(),
+  role: z.string().optional(), // Role is now a simple string
 });
 
 export async function updateUser(uid: string, data: z.infer<typeof UpdateUserSchema>) {

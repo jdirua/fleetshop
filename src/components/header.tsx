@@ -18,7 +18,11 @@ export default function Header() {
   return (
     <header className="flex items-center justify-between p-4 bg-secondary isolate relative z-10 shadow-[0_4px_10px_rgba(0,0,0,0.3)]">
       <div>
-        {/* Page title can go here */}
+        {user && (
+          <h1 className="text-xl font-semibold">
+            Welcome back, {user.displayName || user.email}!
+          </h1>
+        )}
       </div>
       <div className="flex items-center gap-4">
         <Dialog>
@@ -36,7 +40,6 @@ export default function Header() {
             </div>
           </DialogContent>
         </Dialog>
-        {user && <p className="text-sm text-muted-foreground">{user.email}</p>}
         <form action={signOut}>
           <Button variant="outline" type="submit">Sign Out</Button>
         </form>

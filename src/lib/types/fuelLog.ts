@@ -6,6 +6,7 @@ export type FuelLog = {
     liters: number;
     cost: number;
     odometer: number;
+    notes?: string;
 };
 
 export type FormState = {

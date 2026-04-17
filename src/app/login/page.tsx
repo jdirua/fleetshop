@@ -5,7 +5,7 @@ import { UserProvider } from '@/context/UserContext';
 
 export default function LoginPage() {
   return (
-    <UserProvider user={null}>
+    <UserProvider displayName={null} email={null} role={null}>
       <div className="min-h-screen flex items-center justify-center p-6 bg-transparent">
         <div className="w-full max-w-md rounded-2xl shadow-2xl bg-slate-800/75 backdrop-blur-lg border border-slate-300/20">
           <div className="p-8 relative z-10">

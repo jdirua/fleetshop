@@ -23,7 +23,7 @@ const statusColors: { [key: string]: string } = {
 export function WorkOrderCard({ workOrder }: { workOrder: WorkOrder }) {
   return (
     <Link href={`/dashboard/work-orders/${workOrder.id}`} className="block transition-transform duration-200 ease-in-out hover:-translate-y-1">
-      <Card className="h-full flex flex-col bg-slate-800/75 backdrop-blur-lg border border-slate-300/20">
+      <Card className="h-full flex flex-col">
         <CardHeader>
           <div className="flex justify-between items-start">
             <div>

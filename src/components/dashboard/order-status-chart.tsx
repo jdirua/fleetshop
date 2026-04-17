@@ -9,6 +9,7 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Cell,
 } from 'recharts';
 
 const data = [
@@ -47,13 +48,9 @@ export default function OrderStatusChart() {
           }}
         />
         <Legend iconSize={10} />
-        <Bar dataKey="count" fill="#8884d8" radius={[4, 4, 0, 0]}>
+        <Bar dataKey="count" barSize={50} radius={[4, 4, 0, 0]}>
           {data.map((entry, index) => (
-            <Bar
-              key={`cell-${index}`}
-              fill={COLORS[index % COLORS.length]}
-              animationBegin={index * 150}
-            />
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
         </Bar>
       </BarChart>

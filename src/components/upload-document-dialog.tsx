@@ -1,117 +1,120 @@
 'use client';
 
 import { useState } from 'react';
-import { useForm, SubmitHandler } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { uploadDocument } from '@/lib/actions/documents';
-import { Vehicle, WorkOrder, User } from '@/lib/types';
+import { Vehicle } from '@/lib/types/vehicle';
+import { WorkOrder } from '@/lib/types/workOrder';
+import { User } from '@/lib/types/user';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-
-const UploadSchema = z.object({
-  name: z.string().min(1, 'Document name is required'),
-  category: z.string().min(1, 'Category is required'),
-  file: z
-    .instanceof(FileList)
-    .refine(files => files?.length === 1, 'File is required.')
-    .refine(files => files?.[0]?.size <= MAX_FILE_SIZE, `Max file size is 5MB.`),
-  relatedTo: z.string().optional(),
+const documentSchema = z.object({
+  file: z.instanceof(File).refine(file => file.size > 0, 'File is required.'),
+  category: z.string().min(1, 'Category is required.'),
+  relatedTo: z.string().min(1, 'Please select a related item.'),
 });
 
 interface UploadDocumentDialogProps {
-    isOpen: boolean;
-    setIsOpen: (isOpen: boolean) => void;
-    onUploadComplete: () => void;
-    vehicles: Vehicle[];
-    workOrders: WorkOrder[];
-    users: User[];
-    userId: string;
+  isOpen: boolean;
+  onOpenChange: (isOpen: boolean) => void;
+  vehicles: Vehicle[];
+  workOrders: WorkOrder[];
+  users: User[];
+  userId: string;
+  onUploadComplete?: () => void;
 }
 
-export function UploadDocumentDialog({ 
-    isOpen, 
-    setIsOpen, 
-    onUploadComplete, 
-    vehicles, 
-    workOrders, 
-    users, 
-    userId 
+export default function UploadDocumentDialog({ 
+  isOpen, 
+  onOpenChange, 
+  vehicles, 
+  workOrders, 
+  users, 
+  userId,
+  onUploadComplete 
 }: UploadDocumentDialogProps) {
-    const [isUploading, setIsUploading] = useState(false);
-    const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<z.infer<typeof UploadSchema>>({
-        resolver: zodResolver(UploadSchema),
-    });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
+  const form = useForm({
+    resolver: zodResolver(documentSchema),
+    defaultValues: { file: undefined, category: '', relatedTo: '' },
+  });
 
-    const onSubmit: SubmitHandler<z.infer<typeof UploadSchema>> = async (data) => {
-        setIsUploading(true);
-        const file = data.file[0];
-        try {
-            const [relatedType, relatedId] = data.relatedTo?.split('_') || [];
+  const onSubmit = async (values: z.infer<typeof documentSchema>) => {
+    setIsSubmitting(true);
+    const [type, id] = values.relatedTo.split('_');
 
-            await uploadDocument(userId, data.name, data.category, file, relatedType, relatedId);
-            onUploadComplete();
-            reset();
-            setIsOpen(false);
-        } catch (error) {
-            console.error("Upload failed:", error);
-            alert("Upload failed. Please try again.");
-        } finally {
-            setIsUploading(false);
-        }
-    };
+    try {
+      await uploadDocument(
+        userId,
+        values.file.name,
+        values.category,
+        values.file,
+        type,
+        id
+      );
+      onUploadComplete?.();
+      onOpenChange(false);
+      form.reset();
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      // Optionally, show a toast or error message to the user
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>Upload a New Document</DialogTitle>
-                    <DialogDescription>
-                        Fill in the details below and select a file to upload. Max file size: 5MB.
-                    </DialogDescription>
-                </DialogHeader>
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Document Name</Label>
-                        <Input id="name" {...register('name')} />
-                        {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="category">Category</Label>
-                        <Input id="category" {...register('category')} />
-                        {errors.category && <p className="text-red-500 text-sm">{errors.category.message}</p>}
-                    </div>
-                     <div className="grid gap-2">
-                        <Label htmlFor="relatedTo">Link to</Label>
-                        <Select onValueChange={(value) => setValue('relatedTo', value)}>
-                            <SelectTrigger>
-                                <SelectValue placeholder="(Optional) Link to vehicle, work order, etc." />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {vehicles.map(v => <SelectItem key={v.id} value={`vehicle_${v.id}`}>{v.make} {v.model}</SelectItem>)}
-                                {workOrders.map(w => <SelectItem key={w.id} value={`workOrder_${w.id}`}>{w.title}</SelectItem>)}
-                                {users.map(u => <SelectItem key={u.id} value={`user_${u.id}`}>{u.email}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </div>
-                    <div className="grid gap-2">
-                        <Label htmlFor="file">File</Label>
-                        <Input id="file" type="file" {...register('file')} />
-                        {errors.file && <p className="text-red-500 text-sm">{errors.file.message}</p>}
-                    </div>
-                    <DialogFooter>
-                        <Button type="submit" disabled={isUploading}>
-                            {isUploading ? 'Uploading...' : 'Upload'}
-                        </Button>
-                    </DialogFooter>
-                </form>
-            </DialogContent>
-        </Dialog>
-    );
+  return (
+    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Upload Document</DialogTitle>
+          <DialogDescription>Select a file and associate it with a vehicle, work order, or user.</DialogDescription>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div>
+            <label htmlFor="file">File</label>
+            <Input 
+              id="file" 
+              type="file" 
+              onChange={e => {
+                if (e.target.files && e.target.files.length > 0) {
+                  form.setValue('file', e.target.files[0]);
+                }
+              }} 
+            />
+            {form.formState.errors.file && <p className="text-red-500 text-sm">{form.formState.errors.file.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="category">Category</label>
+            <Input id="category" placeholder="e.g., Invoice, Inspection Report" {...form.register('category')} />
+            {form.formState.errors.category && <p className="text-red-500 text-sm">{form.formState.errors.category.message}</p>}
+          </div>
+          <div>
+            <label htmlFor="relatedTo">Related To</label>
+            <Select onValueChange={value => form.setValue('relatedTo', value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select..." />
+              </SelectTrigger>
+              <SelectContent>
+                {vehicles.map(v => <SelectItem key={v.id} value={`vehicle_${v.id}`}>{v.make} {v.model} ({v.registration})</SelectItem>)}
+                {workOrders.map(w => <SelectItem key={w.id} value={`workOrder_${w.id}`}>{w.title}</SelectItem>)}
+                {users.map(u => <SelectItem key={u.uid} value={`user_${u.uid}`}>{u.email}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            {form.formState.errors.relatedTo && <p className="text-red-500 text-sm">{form.formState.errors.relatedTo.message}</p>}
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
+            <Button type="submit" disabled={isSubmitting}>{isSubmitting ? 'Uploading...' : 'Upload'}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
 }

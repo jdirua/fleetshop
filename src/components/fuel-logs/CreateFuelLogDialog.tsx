@@ -1,77 +1,142 @@
 
 'use client';
 
-import { useFormState } from 'react-dom';
-import { Button } from '@/components/ui/button';
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from '@/components/ui/dialog';
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { createFuelLog } from '@/lib/actions/fuelLogs';
-import { useEffect, useState } from 'react';
-import { Vehicle } from '@/lib/types/vehicle';
 import { getVehicles } from '@/lib/actions/vehicles';
-import { toast } from 'sonner';
-import { useRouter } from 'next/navigation';
-import { FuelLogForm } from '../forms/FuelLogForm';
-import { FuelLogFormState } from '@/lib/actions/fuelLogs';
+import { Vehicle } from '@/lib/types';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 
-const initialState: FuelLogFormState = {
-  message: '',
-  errors: {},
-  success: false,
-};
+const FuelLogSchema = z.object({
+  vehicleId: z.string().min(1, 'Vehicle is required'),
+  odometer: z.coerce.number().min(1, 'Odometer reading is required'),
+  gallons: z.coerce.number().min(1, 'Gallons are required'),
+  cost: z.coerce.number().min(1, 'Cost is required'),
+});
 
-export function CreateFuelLogDialog({ children, asChild }: { children: React.ReactNode, asChild?: boolean }) {
-  const [state, formAction] = useFormState(createFuelLog, initialState);
+const initialState = {
+    message: '',
+    errors: undefined,
+    success: false,
+  };
+
+export function CreateFuelLogDialog() {
   const [open, setOpen] = useState(false);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
-  const router = useRouter();
+  const form = useForm<z.infer<typeof FuelLogSchema>>({
+    resolver: zodResolver(FuelLogSchema),
+    defaultValues: {
+      vehicleId: '',
+      odometer: 0,
+      gallons: 0,
+      cost: 0,
+    },
+  });
 
   useEffect(() => {
     if (open) {
       async function loadVehicles() {
-        const { vehicles: fetchedVehicles } = await getVehicles();
+        const { data: fetchedVehicles } = await getVehicles();
         setVehicles(fetchedVehicles);
       }
       loadVehicles();
     }
   }, [open]);
 
-  useEffect(() => {
-    if (state.success) {
-      toast.success(state.message);
-      setOpen(false);
-      router.refresh();
-    } else if (state.message && !state.success && Object.keys(state.errors).length > 0) {
-      toast.error(state.message);
-    }
-  }, [state, router]);
+  const onSubmit = async (values: z.infer<typeof FuelLogSchema>) => {
+    const formData = new FormData();
+    Object.entries(values).forEach(([key, value]) => {
+        formData.append(key, String(value));
+    });
+    await createFuelLog(initialState, formData);
+    form.reset();
+    setOpen(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild={asChild}>
-        {children}
+      <DialogTrigger asChild>
+        <Button>Create Fuel Log</Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-2xl glass-card">
+      <DialogContent>
         <DialogHeader>
-          <DialogTitle>Add New Fuel Log</DialogTitle>
-          <DialogDescription>
-            Fill out the form below to create a new fuel log. Click save when you&apos;re done.
-          </DialogDescription>
+          <DialogTitle>Create New Fuel Log</DialogTitle>
         </DialogHeader>
-        <form action={formAction}>
-          <FuelLogForm vehicles={vehicles} state={state} />
-           <DialogFooter className='pt-4'>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
-            <Button type="submit" className='bg-purple-500 hover:bg-purple-600 text-white'>Save Fuel Log</Button>
-          </DialogFooter>
-        </form>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            <FormField
+              control={form.control}
+              name="vehicleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Vehicle</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a vehicle" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {vehicles.map(vehicle => (
+                        <SelectItem key={vehicle.id} value={vehicle.id}>
+                          {vehicle.make} {vehicle.model} ({vehicle.registration})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="odometer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Odometer</FormLabel>
+                  <FormControl>
+                    <Input type="number" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="gallons"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Gallons</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="cost"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Cost</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="0.01" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button type="submit">Create Log</Button>
+          </form>
+        </Form>
       </DialogContent>
     </Dialog>
   );

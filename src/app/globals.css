@@ -24,9 +24,6 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 48%;
     --radius: 0.5rem;
-    --content-bg: hsl(225, 15%, 19%);
-    --widget-bg: hsl(220, 24%, 14%);
-    --widget-border: hsl(217.2, 32.6%, 17.5%);
   }
 
   html {
@@ -39,7 +36,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     background-color: hsl(var(--background));
-    /* Gravel removed from global body — we'll add it only to authenticated pages */
   }
 
   * {
@@ -49,16 +45,9 @@
 
 @layer utilities {
   .gravel {
-    background-image: url("/gravel.svg");
+    background-image: url('/gravel.svg');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-  }
-  .glass-card {
-    transition: box-shadow 0.3s ease-in-out, border-color 0.3s ease-in-out;
-  }
-  .glass-card:hover {
-    border-color: hsl(var(--primary));
-    box-shadow: 0 0 15px 5px hsl(var(--primary) / 0.3);
   }
 }

@@ -18,6 +18,12 @@ const data = [
   { name: 'Apr', value: 50 },
   { name: 'May', value: 42 },
   { name: 'Jun', value: 60 },
+  { name: 'Jul', value: 55 },
+  { name: 'Aug', value: 70 },
+  { name: 'Sep', value: 65 },
+  { name: 'Oct', value: 80 },
+  { name: 'Nov', value: 75 },
+  { name: 'Dec', value: 90 },
 ];
 
 export default function MaintenanceForecastChart() {

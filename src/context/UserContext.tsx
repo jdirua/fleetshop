@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useState, ReactNode } from 'react';
 import { User } from '@/lib/types';
+import { UserRole } from '@/lib/auth/roles';
 
 interface UserContextType {
   user: User | null;
@@ -11,8 +12,18 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-export function UserProvider({ children, user: initialUser }: { children: ReactNode, user: User | null }) {
-  const [user, setUser] = useState<User | null>(initialUser);
+export function UserProvider({ 
+  children, 
+  displayName, 
+  email, 
+  role 
+}: { 
+  children: ReactNode, 
+  displayName: string | null, 
+  email: string | null, 
+  role: string | null 
+}) {
+  const [user, setUser] = useState<User | null>({ displayName, email, role: role as UserRole, uid: '' });
 
   return (
     <UserContext.Provider value={{ user, setUser }}>

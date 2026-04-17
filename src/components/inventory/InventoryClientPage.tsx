@@ -18,7 +18,7 @@ export function InventoryClientPage({ initialInventory, totalPages }: { initialI
     const { user } = useUser();
     
     const page = Number(searchParams.get('page')) || 1;
-    const canCreate = user && user.role && hasPermission(user.role, 'inventory:create');
+    const canCreate = !!(user && user.role && hasPermission(user.role, 'inventory:create'));
 
     const handlePageChange = (newPage: number) => {
       router.push(`/dashboard/inventory?page=${newPage}`);

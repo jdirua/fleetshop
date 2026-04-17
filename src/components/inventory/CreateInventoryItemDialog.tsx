@@ -12,14 +12,13 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { createInventoryItem } from '@/lib/actions/inventory';
+import { createInventoryItem, InventoryFormState } from '@/lib/actions/inventory';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 
-const initialState = {
-  message: '',
+const initialState: InventoryFormState = {
+  message: undefined,
   errors: undefined,
-  success: false,
 };
 
 interface CreateInventoryItemDialogProps {
@@ -33,14 +32,15 @@ export function CreateInventoryItemDialog({ children, asChild, onFormSubmit }: C
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    if (state.success) {
+    if (state.message && !state.errors) {
       toast.success(state.message);
       setOpen(false);
       if (onFormSubmit) {
         onFormSubmit();
       }
-    } else if (state.message && !state.success && state.errors) {
-      toast.error(state.message);
+    } else if (state.errors) {
+        const errorMsg = state.errors._form ? state.errors._form.join(', ') : "An error occurred";
+        toast.error(errorMsg);
     }
   }, [state, onFormSubmit]);
 

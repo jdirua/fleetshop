@@ -31,16 +31,16 @@ export default function ReportsPage() {
         getActivityLogs(),
       ]);
 
-      if (vehiclesResponse.vehicles && Array.isArray(vehiclesResponse.vehicles)) {
-        setVehicles(vehiclesResponse.vehicles);
+      if (vehiclesResponse.data && Array.isArray(vehiclesResponse.data)) {
+        setVehicles(vehiclesResponse.data);
       }
 
-      if (workOrdersResponse.workOrders && Array.isArray(workOrdersResponse.workOrders)) {
-        setWorkOrders(workOrdersResponse.workOrders);
+      if (workOrdersResponse.data && Array.isArray(workOrdersResponse.data)) {
+        setWorkOrders(workOrdersResponse.data);
       }
 
-      if (activityLogsResponse.activityLogs && Array.isArray(activityLogsResponse.activityLogs)) {
-        setActivityLogs(activityLogsResponse.activityLogs);
+      if (activityLogsResponse.data && Array.isArray(activityLogsResponse.data)) {
+        setActivityLogs(activityLogsResponse.data);
       }
     }
     fetchData();
@@ -65,13 +65,13 @@ export default function ReportsPage() {
 
   return (
     <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold">Reports and Analytics Hub</h1>
+      <div className="flex justify-between items-center mb-5">
+        <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg px-4 py-2 shadow-lg">Reports and Analytics Hub</h1>
         <Button onClick={exportToPdf} className="bg-purple-500 text-white hover:bg-purple-600">Export to PDF</Button>
       </div>
       <div ref={contentRef} className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="glassmorphic">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Vehicle Status</CardTitle>
               <Truck className="h-6 w-6 text-purple-400" />
@@ -80,7 +80,7 @@ export default function ReportsPage() {
               <VehicleStatusChart vehicles={vehicles} />
             </CardContent>
           </Card>
-          <Card className="glassmorphic">
+          <Card>
             <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle>Work Order Status</CardTitle>
               <Wrench className="h-6 w-6 text-purple-400" />
@@ -90,7 +90,7 @@ export default function ReportsPage() {
             </CardContent>
           </Card>
         </div>
-        <Card className="glassmorphic">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Recent Activity</CardTitle>
             <History className="h-6 w-6 text-purple-400" />

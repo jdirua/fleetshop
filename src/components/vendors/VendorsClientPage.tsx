@@ -1,40 +1,45 @@
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useUser } from '@/context/UserContext';
-import { hasPermission } from '@/lib/auth/roles';
+import { useRouter } from 'next/navigation';
 import { Vendor } from '@/lib/types/vendor';
-import { Button } from "@/components/ui/button";
-import { Card } from '@/components/ui/card';
-import { VendorCard } from "@/components/vendors/VendorCard";
-import { PlusCircle, Building, Truck, FileText, AreaChart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { CreateVendorDialog } from '@/components/vendors/CreateVendorDialog';
 import { PaginationControls } from '@/components/ui/PaginationControls';
+import { PlusCircle, Edit, Trash2 } from 'lucide-react';
+import { EmptyState } from '@/components/ui/empty-state';
+import { hasPermission } from "@/lib/auth/roles";
+import { useSession } from '@/lib/auth/session';
 
-// Main Vendors Page Component
-export function VendorsClientPage({ initialVendors, totalPages }: { initialVendors: Vendor[], totalPages: number }) {
-    const router = useRouter();
-    const searchParams = useSearchParams();
-    const { user } = useUser();
-    
-    const page = Number(searchParams.get('page')) || 1;
-    const canCreate = user && user.role && hasPermission(user.role, 'vendors:create');
+interface VendorsClientPageProps {
+  initialVendors: Vendor[];
+  totalPages: number;
+  currentPage: number;
+}
 
-    const handlePageChange = (newPage: number) => {
-      router.push(`/dashboard/vendors?page=${newPage}`);
-    };
+export default function VendorsClientPage({ 
+  initialVendors,
+  totalPages,
+  currentPage 
+}: VendorsClientPageProps) {
+  const router = useRouter();
+  const session = useSession();
+  const userRole = session?.user?.role ?? 'viewer';
 
-    const handleSuccess = () => {
-        router.refresh();
-    };
+  const canCreate = hasPermission(userRole, 'create');
+  const canUpdate = hasPermission(userRole, 'update');
+  const canDelete = hasPermission(userRole, 'delete');
+
+  const handlePageChange = (page: number) => {
+    router.push(`/dashboard/vendors?page=${page}`);
+  };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Vendors Hub</h2>
+    <div className="p-4 md:p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg px-4 py-2 shadow-lg">Vendors</h1>
         {canCreate && (
-          <CreateVendorDialog onSuccess={handleSuccess} asChild>
-            <Button className="bg-purple-500 hover:bg-purple-600 text-white">
+          <CreateVendorDialog asChild>
+            <Button className="bg-purple-500 hover:bg-purple-600 text-white shadow-md transition-all hover:shadow-lg">
                 <PlusCircle className="mr-2 h-4 w-4" />
                 Add Vendor
             </Button>
@@ -42,62 +47,42 @@ export function VendorsClientPage({ initialVendors, totalPages }: { initialVendo
         )}
       </div>
 
-      {initialVendors.length > 0 ? (
-        <>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {initialVendors.map((vendor) => (
-              <VendorCard key={vendor.id} vendor={vendor} />
+      {initialVendors.length === 0 ? (
+        <EmptyState
+          title="No Vendors Found"
+          description="Get started by adding your first vendor."
+          icon={<PlusCircle className="h-12 w-12 text-purple-400" />}
+          action={canCreate ? {
+            text: "Add First Vendor",
+            onClick: () => { /* The dialog will be triggered by its trigger */ }
+          } : undefined}
+        />
+      ) : (
+        <div className="p-6 rounded-lg bg-slate-800/5 backdrop-blur-lg border border-slate-300/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {initialVendors.map(vendor => (
+              <div key={vendor.id} className="p-4 flex flex-col justify-between bg-slate-800/5 backdrop-blur-lg border border-slate-300/20">
+                <div>
+                    <h3 className="text-lg font-bold text-white">{vendor.name}</h3>
+                    <p className="text-sm text-gray-400">{vendor.contactName}</p>
+                    <p className="text-sm text-gray-400">{vendor.contactEmail}</p>
+                </div>
+                <div className="flex justify-end gap-2 mt-4">
+                  {canUpdate && <Button size="sm" variant="outline"><Edit className="h-4 w-4" /></Button>}
+                  {canDelete && <Button size="sm" variant="destructive"><Trash2 className="h-4 w-4" /></Button>}
+                </div>
+              </div>
             ))}
           </div>
-          <PaginationControls currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
-        </>
-      ) : (
-        <EmptyState canCreate={canCreate} onSuccess={handleSuccess} />
+          <div className="mt-6">
+            <PaginationControls
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        </div>
       )}
     </div>
   );
 }
-
-// Empty State Component
-const EmptyState = ({ canCreate, onSuccess }: { canCreate: boolean | undefined, onSuccess: () => void }) => (
-    <Card className="glassmorphic min-h-[70vh] flex items-center justify-center text-center">
-        <div className="flex flex-col items-center justify-center p-6">
-            <div className="relative w-28 h-28 flex items-center justify-center">
-                <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-pulse-slow"></div>
-                <Building className="h-16 w-16 text-purple-400" />
-            </div>
-
-            <h3 className="mt-8 text-3xl font-bold">No Vendors Found</h3>
-            <p className='mt-2 max-w-sm text-lg text-muted-foreground'>
-                Get started by adding your first vendor to the directory.
-            </p>
-            
-            {canCreate && (
-              <CreateVendorDialog onSuccess={onSuccess} asChild>
-                <Button className="mt-8 py-6 px-8 text-lg card-lift bg-purple-500 hover:bg-purple-600 text-white">
-                      <PlusCircle className="mr-3 h-5 w-5" />
-                      Add First Vendor
-                </Button>
-              </CreateVendorDialog>
-            )}
-
-            <div className='mt-12 w-full max-w-3xl'>
-              <p className='text-sm uppercase text-muted-foreground font-semibold tracking-wider'>Once you add a vendor, you&apos;ll be able to:</p>
-              <div className='mt-4 grid grid-cols-3 gap-4 text-left'>
-                  <div className='glassmorphic rounded-lg p-4 flex items-center space-x-3'>
-                      <Truck className='h-6 w-6 text-purple-400' />
-                      <span className='font-medium'>Manage Suppliers</span>
-                  </div>
-                  <div className='glassmorphic rounded-lg p-4 flex items-center space-x-3'>
-                      <FileText className='h-6 w-6 text-purple-400' />
-                      <span className='font-medium'>Track Purchase Orders</span>
-                  </div>
-                  <div className='glassmorphic rounded-lg p-4 flex items-center space-x-3'>
-                      <AreaChart className='h-6 w-6 text-purple-400' />
-                      <span className='font-medium'>Analyze Spending</span>
-                  </div>
-              </div>
-            </div>
-        </div>
-    </Card>
-  );

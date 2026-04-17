@@ -3,9 +3,10 @@ export interface InventoryItem {
     name: string;
     quantity: number;
     cost: number;
-    reorderPoint: number;
-    supplier: string;
-    location: string;
+    reorderPoint?: number;
+    supplier?: string;
+    location?: string;
+    lastRestocked: string;
     createdAt: string;
   }
   

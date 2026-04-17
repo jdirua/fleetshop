@@ -22,7 +22,7 @@ export default function HomePage() {
         </header>
 
         {/* Main Hero Glass Card */}
-        <main className="w-full max-w-4xl bg-black/40 backdrop-blur-sm rounded-2xl border border-white/10 shadow-2xl p-8 sm:p-12 text-center mb-16">
+        <main className="w-full max-w-4xl bg-black/50 backdrop-blur-sm rounded-2xl border border-white/10 shadow-2xl p-8 sm:p-12 text-center mb-16">
           <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tighter mb-4">
             The Future of Fleet Management is Here.
           </h1>
@@ -82,7 +82,7 @@ function FeatureCard({ icon, title, description }: {
   description: string;
 }) {
   return (
-    <div className="bg-black/30 backdrop-blur-sm border border-white/10 p-8 rounded-2xl text-center items-center flex flex-col shadow-xl hover:border-violet-400/50 transition-colors">
+    <div className="bg-black/50 backdrop-blur-sm border border-white/10 p-8 rounded-2xl text-center items-center flex flex-col shadow-xl hover:border-violet-400/50 transition-colors">
       <div className="mb-4 flex items-center justify-center w-16 h-16 bg-violet-950/60 rounded-full">
         {icon}
       </div>

@@ -1,11 +1,11 @@
 
 import { NextResponse } from 'next/server';
-import { adminDb } from '@/lib/firebase/admin-sdk';
+import { db } from '@/lib/firebase/admin-sdk';
 import { WorkOrder } from '@/lib/types/workOrder';
 
 export async function GET() {
   try {
-    const workOrdersRef = adminDb.collection('work-orders');
+    const workOrdersRef = db.collection('work-orders');
     const snapshot = await workOrdersRef.get();
 
     if (snapshot.empty) {

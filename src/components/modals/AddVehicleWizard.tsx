@@ -1,12 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, FormProvider } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useFormState } from 'react-dom';
 
-import { createVehicle } from '@/lib/actions/vehicles';
+import { createVehicle, VehicleFormState } from '@/lib/actions/vehicles';
 import { VehicleSchema } from '@/lib/schemas/vehicle';
 
 import {
@@ -29,6 +30,12 @@ const steps = [
   { id: 3, title: 'Assignment & Notes', fields: ['assignedDriverId', 'notes'] },
 ];
 
+const initialState: VehicleFormState = {
+    message: null,
+    errors: undefined,
+    vehicleId: undefined,
+};
+
 interface AddVehicleWizardProps {
   isOpen: boolean;
   onOpenChange: (isOpen: boolean) => void;
@@ -37,13 +44,21 @@ interface AddVehicleWizardProps {
 
 export function AddVehicleWizard({ isOpen, onOpenChange, onSuccess }: AddVehicleWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [state, formAction] = useFormState(createVehicle, initialState);
 
   const methods = useForm<z.infer<typeof VehicleSchema>>({
     resolver: zodResolver(VehicleSchema),
     mode: 'onChange', 
   });
+
+  useEffect(() => {
+      if (state.message?.includes('successfully')) {
+          onSuccess?.();
+          onOpenChange(false);
+          methods.reset();
+          setCurrentStep(0);
+      }
+  }, [state, onSuccess, onOpenChange, methods]);
 
   const nextStep = async () => {
     const fields = steps[currentStep].fields as (keyof z.infer<typeof VehicleSchema>)[];
@@ -55,31 +70,6 @@ export function AddVehicleWizard({ isOpen, onOpenChange, onSuccess }: AddVehicle
 
   const prevStep = () => {
     setCurrentStep(prev => prev - 1);
-  };
-
-  const onSubmit = async (data: z.infer<typeof VehicleSchema>) => {
-    setIsSubmitting(true);
-    setError(null);
-    
-    const formData = new FormData();
-    Object.entries(data).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        formData.append(key, String(value));
-      }
-    });
-    
-    const result = await createVehicle(formData);
-
-    if (result.message?.includes('successfully')) {
-      onSuccess?.();
-      onOpenChange(false);
-      // Reset form for next time
-      methods.reset();
-      setCurrentStep(0);
-    } else {
-      setError(result.message || 'An unexpected error occurred.');
-    }
-    setIsSubmitting(false);
   };
   
   return (
@@ -102,7 +92,7 @@ export function AddVehicleWizard({ isOpen, onOpenChange, onSuccess }: AddVehicle
             </div>
 
             <FormProvider {...methods}>
-                <form onSubmit={methods.handleSubmit(onSubmit)} className="space-y-8">
+                <form action={formAction} className="space-y-8">
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={currentStep}
@@ -128,8 +118,8 @@ export function AddVehicleWizard({ isOpen, onOpenChange, onSuccess }: AddVehicle
                                     Next
                                 </Button>
                             ) : (
-                                <Button type="submit" disabled={isSubmitting} className="btn-primary-glow">
-                                    {isSubmitting ? 'Adding Vehicle...' : 'Finish'}
+                                <Button type="submit" className="btn-primary-glow">
+                                    Finish
                                 </Button>
                             )}
                         </div>
@@ -137,9 +127,9 @@ export function AddVehicleWizard({ isOpen, onOpenChange, onSuccess }: AddVehicle
                 </form>
             </FormProvider>
             
-            {error && (
+            {state.errors?._form && (
                 <div className="mt-4 rounded-md border border-red-200 bg-red-50 p-4">
-                    <p className="text-sm font-medium text-red-600">{error}</p>
+                    <p className="text-sm font-medium text-red-600">{state.errors._form.join(', ')}</p>
                 </div>
             )}
         </DialogContent>

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getUsers } from "@/lib/actions/users";
+import { getAllUsers } from "@/lib/actions/users";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,8 +19,8 @@ export default function UsersPage() {
   useEffect(() => {
     async function loadUsers() {
       try {
-        const { data } = await getUsers();
-        setUsers(data);
+        const { users: fetchedUsers } = await getAllUsers();
+        setUsers(fetchedUsers);
       } catch (error) {
         console.error("Failed to fetch users:", error);
       }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useFormState } from 'react-dom';
+import { useActionState, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -13,7 +13,6 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { createVendor } from '@/lib/actions/vendors';
-import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
 
@@ -24,7 +23,7 @@ const initialState = {
 };
 
 export function CreateVendorDialog({ children, asChild }: { children: React.ReactNode, asChild?: boolean }) {
-  const [state, formAction] = useFormState(createVendor, initialState);
+  const [state, formAction] = useActionState(createVendor, initialState);
   const [open, setOpen] = useState(false);
   const router = useRouter();
 

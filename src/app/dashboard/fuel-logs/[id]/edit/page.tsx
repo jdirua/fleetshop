@@ -29,7 +29,7 @@ export default async function EditFuelLogPage({ params }: EditFuelLogPageProps) 
                 <CardTitle>Edit Fuel Log</CardTitle>
             </CardHeader>
             <CardContent>
-                <EditFuelLogForm fuelLog={fuelLog} vehicles={vehicles} />
+                <EditFuelLogForm fuelLog={fuelLog} vehicles={vehicles.data} />
             </CardContent>
         </Card>
     </div>

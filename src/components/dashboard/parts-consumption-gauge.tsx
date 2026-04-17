@@ -8,6 +8,21 @@ const mockData = [
     used: 75,
     fill: '#8884d8',
   },
+  {
+    name: 'Oil Filters',
+    used: 60,
+    fill: '#82ca9d',
+  },
+  {
+    name: 'Tires',
+    used: 45,
+    fill: '#ffc658',
+  },
+  {
+    name: 'Air Filters',
+    used: 90,
+    fill: '#ff8042',
+  },
 ];
 
 export function PartsConsumptionGauge() {
@@ -31,7 +46,6 @@ export function PartsConsumptionGauge() {
           background
           dataKey='used'
           angleAxisId={0}
-          fill="#8884d8"
         />
         <Legend iconSize={10} width={120} height={140} layout='vertical' verticalAlign='middle' align="right" />
         <text 

@@ -1,5 +1,7 @@
 {
   "projects": {
     "default": "fleetshop-dev"
-  }
+  },
+  "targets": {},
+  "etags": {}
 }

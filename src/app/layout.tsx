@@ -2,9 +2,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import 'leaflet/dist/leaflet.css';
 import { cn } from '@/lib/utils';
-import { UserProvider } from '@/context/UserContext';
+import { SessionProvider } from '@/lib/auth/session';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,14 +18,12 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // The root layout is a client component and cannot fetch server-side data directly.
-  // The UserProvider will be populated with the user data within a server component further down the tree (e.g., in the dashboard layout).
   return (
     <html lang="en">
-      <body className={cn(inter.className)}>
-        <UserProvider user={null}>
+      <body className={cn(inter.className, "gravel")}>
+        <SessionProvider>
           {children}
-        </UserProvider>
+        </SessionProvider>
       </body>
     </html>
   );

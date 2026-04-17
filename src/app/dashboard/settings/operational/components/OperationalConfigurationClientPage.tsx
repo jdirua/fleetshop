@@ -85,10 +85,8 @@ export function OperationalConfigurationClientPage({ initialData }: OperationalC
   };
 
   return (
-    <div className="p-4 md:p-8 pt-6 space-y-6">
-      <PageTitle title="Operational Configuration" description="Fine-tune business logic and set custom categories." />
-
-      <Card className='glassmorphic'>
+    <div className="space-y-6">
+      <Card className='glass-card-deep'>
         <CardHeader>
           <CardTitle>Alert Thresholds</CardTitle>
           <CardDescription>Set the warning threshold for low inventory items.</CardDescription>
@@ -101,14 +99,14 @@ export function OperationalConfigurationClientPage({ initialData }: OperationalC
               type="number"
               value={lowInventoryThreshold}
               onChange={(e) => setLowInventoryThreshold(Number(e.target.value))}
-              className="w-32 bg-slate-800/50"
+              className="w-32 bg-slate-900/50 border-slate-700"
             />
             <Button onClick={handleThresholdSave}>Save</Button>
           </div>
         </CardContent>
       </Card>
 
-      <Card className='glassmorphic'>
+      <Card className='glass-card-deep'>
         <CardHeader>
           <CardTitle>Service Types</CardTitle>
           <CardDescription>Manage predefined service types for work orders.</CardDescription>
@@ -116,65 +114,55 @@ export function OperationalConfigurationClientPage({ initialData }: OperationalC
         <CardContent>
           <div className="space-y-2 mb-4">
             {serviceTypes.map((type, index) => (
-              <div key={index} className="flex items-center justify-between p-2 rounded-md bg-slate-800/50">
-                <span>{type}</span>
+              <div key={index} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                <span className="text-slate-300">{type}</span>
                 <Button variant="ghost" size="icon" onClick={() => handleDeleteServiceType(type)}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
+                    <Trash2 className="h-4 w-4 text-red-500 hover:text-red-400" />
                 </Button>
               </div>
             ))}
           </div>
-          <div className="flex items-center space-x-2">
-            <Input
-              placeholder="Enter new service type"
-              value={newServiceType}
-              onChange={(e) => setNewServiceType(e.target.value)}
-               className="bg-slate-800/50"
-            />
-            <Button onClick={handleAddServiceType}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add
-            </Button>
+          <div className="flex items-center space-x-2 mt-4">
+              <Input
+                  type="text"
+                  value={newServiceType}
+                  onChange={(e) => setNewServiceType(e.target.value)}
+                  placeholder="Add new service type"
+                  className="bg-slate-900/50 border-slate-700"
+              />
+              <Button onClick={handleAddServiceType}><PlusCircle className="mr-2 h-4 w-4" /> Add</Button>
           </div>
         </CardContent>
       </Card>
 
-      <Card className='glassmorphic'>
+      <Card className='glass-card-deep'>
         <CardHeader>
-          <CardTitle>Part Categories</CardTitle>
-          <CardDescription>Manage categories for inventory parts.</CardDescription>
+            <CardTitle>Part Categories</CardTitle>
+            <CardDescription>Manage categories for inventory parts.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-2 mb-4">
-            {partCategories.map((category, index) => (
-              <div key={index} className="flex items-center justify-between p-2 rounded-md bg-slate-800/50">
-                <span>{category}</span>
-                <Button variant="ghost" size="icon" onClick={() => handleDeletePartCategory(category)}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
-                </Button>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center space-x-2">
-             <Input
-              placeholder="Enter new part category"
-              value={newPartCategory}
-              onChange={(e) => setNewPartCategory(e.target.value)}
-              className="bg-slate-800/50"
-            />
-            <Button onClick={handleAddPartCategory}>
-              <PlusCircle className="mr-2 h-4 w-4" /> Add
-            </Button>
-          </div>
+            <div className="space-y-2 mb-4">
+                {partCategories.map((category, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg">
+                        <span className="text-slate-300">{category}</span>
+                        <Button variant="ghost" size="icon" onClick={() => handleDeletePartCategory(category)}>
+                            <Trash2 className="h-4 w-4 text-red-500 hover:text-red-400" />
+                        </Button>
+                    </div>
+                ))}
+            </div>
+            <div className="flex items-center space-x-2 mt-4">
+                <Input
+                    type="text"
+                    value={newPartCategory}
+                    onChange={(e) => setNewPartCategory(e.target.value)}
+                    placeholder="Add new part category"
+                    className="bg-slate-900/50 border-slate-700"
+                />
+                <Button onClick={handleAddPartCategory}><PlusCircle className="mr-2 h-4 w-4" /> Add</Button>
+            </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-
-// A placeholder for the PageTitle component if it doesn't exist yet
-const PageTitle = ({ title, description }: { title: string, description: string }) => (
-    <div>
-        <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
-        <p className="text-muted-foreground mt-1">{description}</p>
-    </div>
-);

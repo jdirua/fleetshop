@@ -54,7 +54,7 @@ export default async function FuelLogsPage({
   const limit = Number(searchParams?.limit) || 10;
 
   return (
-    <div className="p-4 md:p-8 pt-6">
+    <div>
       <Suspense fallback={<LoadingState />}>
         <FuelLogData page={currentPage} limit={limit} />
       </Suspense>

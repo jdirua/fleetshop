@@ -46,7 +46,7 @@ export function InventoryItemForm({ inventoryItem, onFormSubmit }: InventoryItem
     });
 
     if (inventoryItem) {
-        await updateInventoryItem(inventoryItem.id, {} , formData)
+        await updateInventoryItem(inventoryItem.id, values)
     } else {
         await createInventoryItem({}, formData);
     }

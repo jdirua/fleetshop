@@ -6,7 +6,10 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
   ({ className, children, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("relative rounded-xl border border-white/20 shadow-2xl shadow-black/50 overflow-hidden", className)}
+      className={cn(
+        "relative group rounded-xl border border-white/20 shadow-2xl shadow-black/50 overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-purple-500/20",
+        className
+      )}
       {...props}
     >
       {/* Glass background layer */}
@@ -15,7 +18,11 @@ const Card = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElemen
         style={{ backgroundImage: "url('/gravel.svg')" }}
       />
       {/* Semi-transparent overlay for tint */}
-      <div className="absolute inset-0 rounded-xl bg-black/70" />
+      <div className="absolute inset-0 rounded-xl bg-black/50" />
+
+      {/* Gradient hover effect */}
+      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 opacity-0 group-hover:opacity-60 transition-opacity duration-300" />
+
       {/* Content */}
       <div className="relative z-10">{children}</div>
     </div>

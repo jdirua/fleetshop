@@ -32,7 +32,7 @@ export function CreateUserDialog({ children, asChild }: CreateUserDialogProps) {
   const form = useForm<z.infer<typeof CreateUserSchema>>({
     resolver: zodResolver(CreateUserSchema),
     defaultValues: {
-      role: ROLES.READONLY,
+      role: 'viewer',
       displayName: "",
       email: "",
     },

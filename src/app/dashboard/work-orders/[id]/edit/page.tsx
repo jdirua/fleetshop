@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { updateWorkOrder, getWorkOrder } from '@/lib/actions/workOrders';
 import { getVehicles } from '@/lib/actions/vehicles';
-import { getUsers } from '@/lib/actions/users';
+import { getAllUsers } from '@/lib/actions/users';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,6 @@ import { Vehicle } from '@/lib/types/vehicle';
 import { User } from '@/lib/types/user';
 import { WorkOrder } from '@/lib/types/workOrder';
 import { notFound } from 'next/navigation';
-import { ROLES } from '@/lib/auth/roles';
 
 const workOrderSchema = z.object({
   title: z.string().min(1, 'Title is required'),
@@ -47,10 +46,10 @@ export default function EditWorkOrderPage({ params }: { params: { id: string } }
   useEffect(() => {
     async function loadInitialData() {
         try {
-            const [fetchedWorkOrder, fetchedVehicles, fetchedUsers] = await Promise.all([
+            const [fetchedWorkOrder, fetchedVehicles, { users: fetchedUsers }] = await Promise.all([
                 getWorkOrder(params.id),
                 getVehicles({ limit: 1000 }),
-                getUsers({ limit: 1000 }),
+                getAllUsers(),
             ]);
 
             if (fetchedWorkOrder) {
@@ -62,8 +61,8 @@ export default function EditWorkOrderPage({ params }: { params: { id: string } }
                 });
             }
             
-            setVehicles(fetchedVehicles.vehicles);
-            setUsers(fetchedUsers.data.filter(u => u.role === ROLES.MECHANIC));
+            setVehicles(fetchedVehicles.data);
+            setUsers(fetchedUsers.filter(u => u.role === 'mechanic'));
         } catch (error) {
             console.error('Failed to load initial data', error)
         }

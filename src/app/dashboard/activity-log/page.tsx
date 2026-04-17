@@ -4,7 +4,7 @@ import ActivityLogClientPage from "./components/ActivityLogClientPage";
 
 export default async function ActivityLogPage({ searchParams }: { searchParams?: { page?: string } }) {
   const currentPage = Number(searchParams?.page) || 1;
-  const { activityLogs, totalPages } = await getActivityLogs({ page: currentPage });
+  const { data: activityLogs, totalPages } = await getActivityLogs({ page: currentPage });
 
   return (
     <ActivityLogClientPage

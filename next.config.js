@@ -1,5 +1,7 @@
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  trailingSlash: true,
   reactStrictMode: true,
 
   // Required for Firebase Studio / Cloud Workstations preview
@@ -19,7 +21,7 @@ const nextConfig = {
       // THE FIX: Adding a rule to allow images from the local dev server
       { protocol: 'http', hostname: 'localhost' },
     ],
-  },
+  }
 };
 
 module.exports = nextConfig;

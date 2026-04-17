@@ -27,7 +27,7 @@ const getLogIcon = (targetType: string) => {
     }
 };
 
-export default function ActivityLogClientPage({ activityLogs, totalPages, currentPage }: ActivityLogClientPageProps) {
+export default function ActivityLogClientPage({ activityLogs = [], totalPages, currentPage }: ActivityLogClientPageProps) {
   const router = useRouter();
 
   const handlePageChange = (page: number) => {
@@ -35,15 +35,15 @@ export default function ActivityLogClientPage({ activityLogs, totalPages, curren
   };
 
   return (
-    <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
-      <div className="flex items-center justify-between">
-        <h2 className="text-2xl font-bold">Activity Log Hub</h2>
+    <div className="p-4 md:p-6">
+      <div className="flex items-center justify-between mb-5">
+        <h1 className="text-4xl font-bold text-white bg-gradient-to-r from-purple-600 to-indigo-600 rounded-lg px-4 py-2 shadow-lg">Activity Log Hub</h1>
       </div>
 
       {activityLogs.length === 0 ? (
         <EmptyState />
       ) : (
-        <Card className="p-4 sm:p-6 md:p-8 bg-slate-800/75 backdrop-blur-lg border border-slate-300/20">
+        <Card className="p-4 sm:p-6 md:p-8">
           <div className="relative border-l-2 border-slate-700/50 ml-6 space-y-10">
             {activityLogs.map((log) => (
               <div key={log.id} className="relative pl-10">
@@ -81,30 +81,32 @@ export default function ActivityLogClientPage({ activityLogs, totalPages, curren
 }
 
 const EmptyState = () => (
-    <Card className="min-h-[70vh] flex flex-col items-center justify-center text-center p-6 bg-slate-800/75 backdrop-blur-lg border border-slate-300/20">
-        <div className="relative w-28 h-28 flex items-center justify-center">
-            <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-pulse-slow"></div>
-            <FileClock className="h-16 w-16 text-purple-400" />
+    <Card className="glass-card min-h-[70vh] flex flex-col items-center text-center p-6">
+        <div className="flex-grow flex flex-col items-center justify-center">
+            <div className="relative w-28 h-28 flex items-center justify-center">
+                <div className="absolute inset-0 bg-purple-500/20 rounded-full animate-pulse-slow"></div>
+                <FileClock className="h-16 w-16 text-purple-400" />
+            </div>
+            <h3 className="mt-8 text-3xl font-bold text-slate-50 text-shadow">No Recent Activity</h3>
+            <p className='mt-2 text-lg text-slate-400 text-center'>
+                When activities are logged, they will appear here.
+            </p>
         </div>
-        <h3 className="mt-8 text-3xl font-bold">No Recent Activity</h3>
-        <p className='mt-2 max-w-sm text-lg text-muted-foreground'>
-            When activities are logged, they will appear here.
-        </p>
-        <div className='mt-12 w-full max-w-2xl'>
-            <p className='text-sm uppercase text-muted-foreground font-semibold tracking-wider'>THE ACTIVITY LOG MONITORS:</p>
-            <div className='mt-4 grid grid-cols-3 gap-4 text-left'>
-                <div className='rounded-lg p-4 flex items-center space-x-3 bg-slate-800/75 backdrop-blur-lg border border-slate-300/20'>
-                    <User className='h-6 w-6 text-purple-400' />
-                    <span className='font-medium'>User Actions</span>
-                </div>
-                <div className='rounded-lg p-4 flex items-center space-x-3 bg-slate-800/75 backdrop-blur-lg border border-slate-300/20'>
-                    <Settings className='h-6 w-6 text-purple-400' />
-                    <span className='font-medium'>System Events</span>
-                </div>
-                <div className='rounded-lg p-4 flex items-center space-x-3 bg-slate-800/75 backdrop-blur-lg border border-slate-300/20'>
-                    <Truck className='h-6 w-6 text-purple-400' />
-                    <span className='font-medium'>Fleet Updates</span>
-                </div>
+        <div className='w-full max-w-2xl'>
+            <p className='text-sm uppercase text-slate-500 font-semibold tracking-wider text-center'>THE ACTIVITY LOG MONITORS:</p>
+            <div className='mt-4 grid grid-cols-1 md:grid-cols-3 gap-6'>
+                <Card className='glass-card p-6 flex flex-col items-center justify-center gap-4'>
+                    <User className='h-8 w-8 text-purple-400' />
+                    <span className='font-medium text-slate-200'>User Actions</span>
+                </Card>
+                <Card className='glass-card p-6 flex flex-col items-center justify-center gap-4'>
+                    <Settings className='h-8 w-8 text-purple-400' />
+                    <span className='font-medium text-slate-200'>System Events</span>
+                </Card>
+                <Card className='glass-card p-6 flex flex-col items-center justify-center gap-4'>
+                    <Truck className='h-8 w-8 text-purple-400' />
+                    <span className='font-medium text-slate-200'>Fleet Updates</span>
+                </Card>
             </div>
         </div>
     </Card>

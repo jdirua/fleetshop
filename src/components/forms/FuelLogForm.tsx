@@ -28,7 +28,7 @@ export function FuelLogForm({ vehicles, state, fuelLog }: FuelLogFormProps) {
             <SelectContent>
               {vehicles.map((vehicle) => (
                 <SelectItem key={vehicle.id} value={vehicle.id}>
-                  {vehicle.name} ({vehicle.make} {vehicle.model})
+                  {vehicle.year} {vehicle.make} {vehicle.model}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -43,9 +43,9 @@ export function FuelLogForm({ vehicles, state, fuelLog }: FuelLogFormProps) {
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="space-y-2">
-          <Label htmlFor="gallons">Gallons</Label>
-          <Input id="gallons" name="gallons" type="number" step="0.01" defaultValue={fuelLog?.gallons} required />
-          {state.errors?.gallons && <p className="text-sm text-red-500">{state.errors.gallons}</p>}
+          <Label htmlFor="liters">Liters</Label>
+          <Input id="liters" name="liters" type="number" step="0.01" defaultValue={fuelLog?.liters} required />
+          {state.errors?.liters && <p className="text-sm text-red-500">{state.errors.liters}</p>}
         </div>
         <div className="space-y-2">
           <Label htmlFor="cost">Total Cost</Label>
